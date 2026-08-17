@@ -23,6 +23,17 @@
   /* On/off target. Held at the accent's chroma and lightness so they read as
      the same family, not as traffic lights bolted onto the palette. */
   :root { --color-under: oklch(0.74 0.11 152); --color-over: oklch(0.68 0.15 24); }
+  @media (max-width: 720px) {
+    [data-stack] { grid-template-columns: 1fr !important; }
+    .card { padding: 14px 15px !important; }
+    .nav-brand { font-size: 17px !important; }
+    .btn { min-height: 44px; }
+    h1 { font-size: clamp(24px, 7vw, 34px) !important; }
+    input[type="checkbox"] { width: 18px; height: 18px; }
+    /* Ring stays 16px; the hit area reaches 44px. */
+    [data-hit] { position: relative; }
+    [data-hit]::after { content: ""; position: absolute; inset: -14px; }
+  }
 </style>
 </helmet>
 
@@ -52,16 +63,16 @@
   </sc-if>
 
   <sc-if value="{{ showApp }}" hint-placeholder-val="{{ true }}">
-    <div style="max-width: 1080px; margin: 0 auto; padding: 0 24px 64px;">
+    <div style="max-width: 1080px; margin: 0 auto; padding: 0 clamp(14px, 4vw, 24px) 64px;">
 
-      <div class="nav" style="padding: 20px 0 8px;">
+      <div class="nav" style="padding: 20px 0 8px; flex-wrap: wrap; row-gap: 8px;">
         <div class="nav-brand">Financial Tracker</div>
         <span style="font-size: 12px; opacity: 0.55;">{{ userEmail }}</span>
         <span style="font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--color-accent);">{{ liveLabel }}</span>
         <button class="btn btn-secondary" onClick="{{ signOut }}">Sign out</button>
       </div>
 
-      <div style="display: flex; gap: 4px; margin: 12px 0 24px;">
+      <div style="display: flex; gap: 4px; margin: 12px 0 24px; flex-wrap: wrap;">
         <button class="btn {{ budgetTabClass }}" onClick="{{ goBudget }}">Budget</button>
         <button class="btn {{ goalsTabClass }}" onClick="{{ goGoals }}">Goals</button>
         <button class="btn {{ insightsTabClass }}" onClick="{{ goInsights }}">Insights</button>
@@ -136,7 +147,7 @@
 
           <div class="card" style="padding: 18px; gap: 12px;">
             <div class="card-title">Transactions</div>
-            <table class="table">
+            <div style="overflow-x: auto;"><table class="table" style="min-width: 600px;">
               <thead>
                 <tr>
                   <th style="width: 96px;">Date</th>
@@ -158,6 +169,7 @@
                 </sc-for>
               </tbody>
             </table>
+            </div>
             <sc-if value="{{ drillEmpty }}" hint-placeholder-val="{{ false }}">
               <p style="font-size: 13px; opacity: 0.5; margin: 8px 0 0;">No transactions in this period.</p>
             </sc-if>
@@ -230,7 +242,7 @@
                     <input type="checkbox" checked="{{ exSavings }}" onChange="{{ onExSavings }}" style="accent-color: var(--color-accent); cursor: pointer;">
                     Exclude savings
                   </label>
-                  <button type="button" aria-label="What does excluding savings do?" onMouseEnter="{{ showTipSavings }}" onMouseLeave="{{ hideTip }}" onFocus="{{ showTipSavings }}" onBlur="{{ hideTip }}" onClick="{{ toggleTipSavings }}" style="width: 16px; height: 16px; flex: none; display: grid; place-items: center; border-radius: 50%; border: 1px solid var(--color-neutral-600); background: transparent; color: var(--color-neutral-300); font-family: var(--font-body); font-size: 10px; line-height: 1; cursor: help; padding: 0;" style-hover="border-color: var(--color-accent); color: var(--color-accent);">i</button>
+                  <button type="button" data-hit aria-label="What does excluding savings do?" onMouseEnter="{{ showTipSavings }}" onMouseLeave="{{ hideTip }}" onFocus="{{ showTipSavings }}" onBlur="{{ hideTip }}" onClick="{{ toggleTipSavings }}" style="width: 16px; height: 16px; flex: none; display: grid; place-items: center; border-radius: 50%; border: 1px solid var(--color-neutral-600); background: transparent; color: var(--color-neutral-300); font-family: var(--font-body); font-size: 10px; line-height: 1; cursor: help; padding: 0;" style-hover="border-color: var(--color-accent); color: var(--color-accent);">i</button>
                   <sc-if value="{{ tipSavings }}" hint-placeholder-val="{{ false }}">
                     <div role="tooltip" style="position: absolute; bottom: calc(100% + 8px); left: 0; z-index: 40; width: 260px; padding: 10px 12px; border-radius: var(--radius-sm); border: 1px solid var(--color-neutral-700); background: var(--color-neutral-900); box-shadow: var(--shadow-md); font-size: 12px; line-height: 1.5; color: var(--color-text); text-wrap: pretty;">Money moved into savings is a real outflow, but it is not spending. Excluded here, it is counted separately below — so a month you saved hard does not read as a month you overspent.</div>
                   </sc-if>
@@ -240,14 +252,14 @@
                     <input type="checkbox" checked="{{ exOneOff }}" onChange="{{ onExOneOff }}" style="accent-color: var(--color-accent); cursor: pointer;">
                     Exclude one-off payments
                   </label>
-                  <button type="button" aria-label="What does excluding one-off payments do?" onMouseEnter="{{ showTipOneOff }}" onMouseLeave="{{ hideTip }}" onFocus="{{ showTipOneOff }}" onBlur="{{ hideTip }}" onClick="{{ toggleTipOneOff }}" style="width: 16px; height: 16px; flex: none; display: grid; place-items: center; border-radius: 50%; border: 1px solid var(--color-neutral-600); background: transparent; color: var(--color-neutral-300); font-family: var(--font-body); font-size: 10px; line-height: 1; cursor: help; padding: 0;" style-hover="border-color: var(--color-accent); color: var(--color-accent);">i</button>
+                  <button type="button" data-hit aria-label="What does excluding one-off payments do?" onMouseEnter="{{ showTipOneOff }}" onMouseLeave="{{ hideTip }}" onFocus="{{ showTipOneOff }}" onBlur="{{ hideTip }}" onClick="{{ toggleTipOneOff }}" style="width: 16px; height: 16px; flex: none; display: grid; place-items: center; border-radius: 50%; border: 1px solid var(--color-neutral-600); background: transparent; color: var(--color-neutral-300); font-family: var(--font-body); font-size: 10px; line-height: 1; cursor: help; padding: 0;" style-hover="border-color: var(--color-accent); color: var(--color-accent);">i</button>
                   <sc-if value="{{ tipOneOff }}" hint-placeholder-val="{{ false }}">
                     <div role="tooltip" style="position: absolute; bottom: calc(100% + 8px); right: 0; z-index: 40; width: 260px; padding: 10px 12px; border-radius: var(--radius-sm); border: 1px solid var(--color-neutral-700); background: var(--color-neutral-900); box-shadow: var(--shadow-md); font-size: 12px; line-height: 1.5; color: var(--color-text); text-wrap: pretty;">One-off payments are irregular by nature — a visa renewal, a rental deposit. Left in, a single large payment dominates the monthly average and makes an ordinary month look catastrophic.</div>
                   </sc-if>
                 </div>
               </div>
             </div>
-            <table class="table">
+            <div style="overflow-x: auto;"><table class="table" style="min-width: 620px;">
               <thead>
                 <tr>
                   <th style="width: 28px;"></th>
@@ -282,6 +294,7 @@
                 </sc-for>
               </tbody>
             </table>
+            </div>
             <sc-if value="{{ noData }}" hint-placeholder-val="{{ false }}">
               <p style="font-size: 13px; opacity: 0.5; margin: 8px 0 0;">No transactions yet. Import a Monzo CSV below.</p>
             </sc-if>
@@ -340,7 +353,7 @@
 
       <sc-if value="{{ isGoals }}" hint-placeholder-val="{{ false }}">
         <div style="display: flex; flex-direction: column; gap: 24px;">
-          <div style="display: grid; grid-template-columns: minmax(220px, 260px) 1fr; gap: 20px; align-items: start;">
+          <div data-stack style="display: grid; grid-template-columns: minmax(220px, 260px) 1fr; gap: 20px; align-items: start;">
 
             <div class="card" style="padding: 16px; gap: 10px;">
               <div style="display: flex; align-items: center; gap: 10px;">
@@ -475,7 +488,7 @@
               </div>
             </div>
 
-            <table class="table">
+            <div style="overflow-x: auto;"><table class="table" style="min-width: 560px;">
               <thead>
                 <tr>
                   <th>Year</th>
@@ -497,6 +510,7 @@
                 </sc-for>
               </tbody>
             </table>
+            </div>
             <sc-if value="{{ forecastEmpty }}" hint-placeholder-val="{{ true }}">
               <p style="font-size: 13px; opacity: 0.5; margin: 0;">{{ forecastEmptyNote }}</p>
             </sc-if>

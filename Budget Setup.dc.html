@@ -23,6 +23,17 @@
   /* On/off target. Held at the accent's chroma and lightness so they read as
      the same family, not as traffic lights bolted onto the palette. */
   :root { --color-under: oklch(0.74 0.11 152); --color-over: oklch(0.68 0.15 24); }
+  @media (max-width: 720px) {
+    [data-stack] { grid-template-columns: 1fr !important; }
+    .card { padding: 14px 15px !important; }
+    .nav-brand { font-size: 17px !important; }
+    .btn { min-height: 44px; }
+    h1 { font-size: clamp(24px, 7vw, 34px) !important; }
+    input[type="checkbox"] { width: 18px; height: 18px; }
+    /* Ring stays 16px; the hit area reaches 44px. */
+    [data-hit] { position: relative; }
+    [data-hit]::after { content: ""; position: absolute; inset: -14px; }
+  }
 </style>
 </helmet>
 
@@ -51,16 +62,16 @@
   </sc-if>
 
   <sc-if value="{{ showApp }}" hint-placeholder-val="{{ true }}">
-    <div style="max-width: 1080px; margin: 0 auto; padding: 0 24px 64px;">
+    <div style="max-width: 1080px; margin: 0 auto; padding: 0 clamp(14px, 4vw, 24px) 64px;">
 
-      <div class="nav" style="padding: 20px 0 8px;">
+      <div class="nav" style="padding: 20px 0 8px; flex-wrap: wrap; row-gap: 8px;">
         <div class="nav-brand">Budget setup</div>
         <span style="font-size: 12px; opacity: 0.55;">{{ userEmail }}</span>
         <span style="font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--color-accent);">{{ liveLabel }}</span>
         <a href="Finance Tracker.dc.html" class="btn btn-secondary" style="text-decoration: none;">Tracker</a>
       </div>
 
-      <div style="display: flex; gap: 4px; margin: 12px 0 28px;">
+      <div style="display: flex; gap: 4px; margin: 12px 0 28px; flex-wrap: wrap;">
         <button class="btn {{ setupTabClass }}" onClick="{{ goSetup }}">Set up</button>
         <button class="btn {{ compareTabClass }}" onClick="{{ goCompare }}">Budget vs actual</button>
       </div>
