@@ -65,6 +65,32 @@
         <button class="btn {{ compareTabClass }}" onClick="{{ goCompare }}">Budget vs actual</button>
       </div>
 
+      <div style="display: flex; flex-direction: column; gap: 10px; margin: -14px 0 28px; max-width: 760px;">
+        <div style="display: flex; align-items: baseline; gap: 10px;">
+          <div class="card-kicker" style="margin: 0;">Getting started</div>
+          <button class="btn btn-ghost" style="font-size: 11px; padding: 2px 8px;" onClick="{{ toggleHowTo }}">{{ howToLabel }}</button>
+        </div>
+        <sc-if value="{{ showHowTo }}" hint-placeholder-val="{{ true }}">
+          <div style="display: flex; flex-direction: column; gap: 12px;">
+            <p style="font-size: 13px; line-height: 1.55; opacity: 0.72; margin: 0; text-wrap: pretty;">Set up your monthly expenses and shared expenses so you can tell from the start whether you are on or off track. Use the salary box to indicate your salary and the app will calculate how much money you have left as you add an expense.</p>
+            <ol style="list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 9px;">
+              <li style="display: flex; gap: 11px; font-size: 13px; line-height: 1.55; opacity: 0.72; text-wrap: pretty;">
+                <span style="flex: none; width: 18px; height: 18px; margin-top: 1px; display: grid; place-items: center; border-radius: 50%; border: 1px solid var(--color-accent-700); color: var(--color-accent-300); font-size: 10px; font-variant-numeric: tabular-nums;">1</span>
+                <span>Drop a CSV or Excel file with 2 columns — Bill name and Monthly Target. The system will try to organise it against a category. You can change the category if you wish.</span>
+              </li>
+              <li style="display: flex; gap: 11px; font-size: 13px; line-height: 1.55; opacity: 0.72; text-wrap: pretty;">
+                <span style="flex: none; width: 18px; height: 18px; margin-top: 1px; display: grid; place-items: center; border-radius: 50%; border: 1px solid var(--color-accent-700); color: var(--color-accent-300); font-size: 10px; font-variant-numeric: tabular-nums;">2</span>
+                <span>If you share a joint account with a partner, tick the joint account box — it will calculate how much you should pay into it each month.</span>
+              </li>
+              <li style="display: flex; gap: 11px; font-size: 13px; line-height: 1.55; opacity: 0.72; text-wrap: pretty;">
+                <span style="flex: none; width: 18px; height: 18px; margin-top: 1px; display: grid; place-items: center; border-radius: 50%; border: 1px solid var(--color-accent-700); color: var(--color-accent-300); font-size: 10px; font-variant-numeric: tabular-nums;">3</span>
+                <span>You can then edit the rows in the budget lines and hit Save.</span>
+              </li>
+            </ol>
+          </div>
+        </sc-if>
+      </div>
+
       <sc-if value="{{ isSetup }}" hint-placeholder-val="{{ true }}">
         <div style="display: flex; flex-direction: column; gap: 28px;">
 
@@ -240,7 +266,17 @@
           </div>
 
           <div class="card" style="padding: 18px; gap: 14px;">
-            <div class="card-title">By category</div>
+            <div style="display: flex; align-items: center; gap: 16px; flex-wrap: wrap;">
+              <div class="card-title" style="margin-right: auto;">By category</div>
+              <label style="display: flex; align-items: center; gap: 7px; font-size: 13px; opacity: 0.7; cursor: pointer; white-space: nowrap;">
+                <input type="checkbox" checked="{{ exSavings }}" onChange="{{ onExSavings }}" style="accent-color: var(--color-accent); cursor: pointer;">
+                Exclude savings
+              </label>
+              <label style="display: flex; align-items: center; gap: 7px; font-size: 13px; opacity: 0.7; cursor: pointer; white-space: nowrap;">
+                <input type="checkbox" checked="{{ exOneOff }}" onChange="{{ onExOneOff }}" style="accent-color: var(--color-accent); cursor: pointer;">
+                Exclude one-off payments
+              </label>
+            </div>
             <sc-if value="{{ noCompare }}" hint-placeholder-val="{{ false }}">
               <p style="font-size: 13px; opacity: 0.5; margin: 0;">Nothing to compare yet. Save some budget lines, and import statements on the tracker.</p>
             </sc-if>
@@ -291,7 +327,8 @@
 class Component extends DCLogic {
   state = {
     ready: false, user: null, email: '', password: '', authError: '', live: false,
-    tab: 'setup', lines: [], txRows: [], uploadMsg: '', saveMsg: '', saving: false,
+    tab: 'setup', lines: [], txRows: [], uploadMsg: '', saveMsg: '', saving: false, howTo: null,
+    exSavings: null, exOneOff: null,
     importMode: 'append', removed: [], suggesting: false, suggestMsg: '', autoSuggest: true,
     salary: '', salaryDirty: false
   };
@@ -583,9 +620,14 @@ class Component extends DCLogic {
   };
 
   // Monthly actual spend per category, on the tracker's rules.
+  // Props seed these; an on-page toggle overrides, so they work outside the editor too.
+  exSavings() { return this.state.exSavings ?? (this.props.excludeSavings !== false); }
+
+  exOneOff() { return this.state.exOneOff ?? (this.props.excludeOneOff !== false); }
+
   actuals() {
-    const splitSavings = this.props.excludeSavings !== false;
-    const splitOneOff = this.props.excludeOneOff !== false;
+    const splitSavings = this.exSavings();
+    const splitOneOff = this.exOneOff();
     const rows = this.state.txRows.filter(r => !this.isInternal(r));
     const byCategory = {};
     const months = new Set();
@@ -603,6 +645,16 @@ class Component extends DCLogic {
     const monthly = {};
     Object.entries(byCategory).forEach(([k, v]) => { monthly[k] = v / n; });
     return { monthly, months: n, categories: Object.keys(byCategory).sort() };
+  }
+
+  // Open by default until dismissed once; the choice sticks per browser. Someone
+  // with no budget lines yet always sees it, dismissal or not.
+  showHowTo() {
+    if (this.state.howTo !== null) return this.state.howTo;
+    if (!this.state.lines.length) return true;
+    let saved = null;
+    try { saved = localStorage.getItem('bs.howTo'); } catch (e) {}
+    return saved !== '0';
   }
 
   renderVals() {
@@ -712,6 +764,13 @@ class Component extends DCLogic {
       showApp: !!s.user,
       userEmail: s.user?.email || '',
       liveLabel: s.live ? 'Live' : '',
+      showHowTo: this.showHowTo(),
+      howToLabel: this.showHowTo() ? 'Hide' : 'Show',
+      toggleHowTo: () => {
+        const next = !this.showHowTo();
+        try { localStorage.setItem('bs.howTo', next ? '1' : '0'); } catch (e) {}
+        this.setState({ howTo: next });
+      },
       email: s.email, password: s.password, authError: s.authError,
       onEmail: e => this.setState({ email: e.target.value }),
       onPassword: e => this.setState({ password: e.target.value }),
@@ -761,13 +820,16 @@ class Component extends DCLogic {
       actualBasisLabel: 'Actual is your average monthly spend per category across '
         + a.months + (a.months === 1 ? ' month' : ' months')
         + ' of imported statements, on the same rules as the tracker: pot transfers excluded, refunds netted off'
-        + (this.props.excludeSavings === false ? ', savings counted as spend' : ', savings counted separately')
-        + (this.props.excludeOneOff === false ? ', one-off payments counted as spend.' : ', one-off payments counted separately.'),
+        + (this.exSavings() ? ', savings counted separately' : ', savings counted as spend')
+        + (this.exOneOff() ? ', one-off payments counted separately.' : ', one-off payments counted as spend.'),
       actualTotal: actualSum ? this.money(actualSum) : '—',
       monthCountLabel: 'average over ' + a.months + (a.months === 1 ? ' month' : ' months'),
       diffTotal: this.signed(diff),
       diffColor: diff < 0 ? 'var(--color-over)' : 'var(--color-under)',
       diffLabel: diff < 0 ? 'over budget a month' : 'under budget a month',
+      exSavings: this.exSavings(), exOneOff: this.exOneOff(),
+      onExSavings: e => this.setState({ exSavings: e.target.checked }),
+      onExOneOff: e => this.setState({ exOneOff: e.target.checked }),
       compareRows, hasCompare: compareRows.length > 0, noCompare: compareRows.length === 0
     };
   }

@@ -68,6 +68,29 @@
         <a href="Budget Setup.dc.html" class="btn btn-secondary" style="margin-left: auto; text-decoration: none;">Budget setup</a>
       </div>
 
+      <div style="display: flex; flex-direction: column; gap: 10px; margin: -8px 0 26px; max-width: 760px;">
+        <div style="display: flex; align-items: baseline; gap: 10px;">
+          <div class="card-kicker" style="margin: 0;">Getting started</div>
+          <button class="btn btn-ghost" style="font-size: 11px; padding: 2px 8px;" onClick="{{ toggleHowTo }}">{{ howToLabel }}</button>
+        </div>
+        <sc-if value="{{ showHowTo }}" hint-placeholder-val="{{ true }}">
+          <ol style="list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 9px; counter-reset: step;">
+            <li style="display: flex; gap: 11px; font-size: 13px; line-height: 1.55; opacity: 0.72; text-wrap: pretty;">
+              <span style="flex: none; width: 18px; height: 18px; margin-top: 1px; display: grid; place-items: center; border-radius: 50%; border: 1px solid var(--color-accent-700); color: var(--color-accent-300); font-size: 10px; font-variant-numeric: tabular-nums;">1</span>
+              <span>Scroll down and import a Monzo bank statement. <span style="opacity: 0.7;">(Only Monzo supported now)</span></span>
+            </li>
+            <li style="display: flex; gap: 11px; font-size: 13px; line-height: 1.55; opacity: 0.72; text-wrap: pretty;">
+              <span style="flex: none; width: 18px; height: 18px; margin-top: 1px; display: grid; place-items: center; border-radius: 50%; border: 1px solid var(--color-accent-700); color: var(--color-accent-300); font-size: 10px; font-variant-numeric: tabular-nums;">2</span>
+              <span>Your expenditure will summarise by category.</span>
+            </li>
+            <li style="display: flex; gap: 11px; font-size: 13px; line-height: 1.55; opacity: 0.72; text-wrap: pretty;">
+              <span style="flex: none; width: 18px; height: 18px; margin-top: 1px; display: grid; place-items: center; border-radius: 50%; border: 1px solid var(--color-accent-700); color: var(--color-accent-300); font-size: 10px; font-variant-numeric: tabular-nums;">3</span>
+              <span>Go to the <a href="Budget Setup.dc.html" style="color: var(--color-accent-300);">Budget setup</a> page and create your budget with each payment linked to a category. This will then do a monthly average comparison on the tracker.</span>
+            </li>
+          </ol>
+        </sc-if>
+      </div>
+
       <sc-if value="{{ isDrill }}" hint-placeholder-val="{{ false }}">
         <div style="display: flex; flex-direction: column; gap: 24px;">
           <div style="display: flex; align-items: center; gap: 14px;">
@@ -512,7 +535,7 @@ class Component extends DCLogic {
   state = {
     ready: false, user: null, signUp: false, email: '', password: '', authError: '',
     tab: 'budget', rows: [], sources: [], goals: [], budget: [], excluded: [], catMonth: 'all',
-    exSavings: null, exOneOff: null, tip: '',
+    exSavings: null, exOneOff: null, tip: '', howTo: null,
     accountType: 'main', uploadMsg: '', goalMsg: '', savingGoal: false,
     dId: null, dName: '', dTarget: '', dCurrent: '', dMonthly: '', dType: '', dRate: '', dDate: '',
     aiText: '', aiLoading: false, live: false,
@@ -653,6 +676,16 @@ class Component extends DCLogic {
   // In-page toggles. The prop supplies the initial value so the editor's Tweaks panel
   // still works, but once the user flips a switch on the page that choice wins — which is
   // what makes the toggles work in a plain browser, where props do not exist.
+  // Open by default until dismissed once; the choice sticks per browser. Someone
+  // with no statements yet always sees it, dismissal or not.
+  showHowTo() {
+    if (this.state.howTo !== null) return this.state.howTo;
+    if (!this.state.rows.length) return true;
+    let saved = null;
+    try { saved = localStorage.getItem('ft.howTo'); } catch (e) {}
+    return saved !== '0';
+  }
+
   exSavings() {
     return this.state.exSavings ?? (this.props.excludeSavings !== false);
   }
@@ -1242,6 +1275,13 @@ class Component extends DCLogic {
       exOneOff: this.exOneOff(),
       onExSavings: e => this.setState({ exSavings: e.target.checked }),
       onExOneOff: e => this.setState({ exOneOff: e.target.checked }),
+      showHowTo: this.showHowTo(),
+      howToLabel: this.showHowTo() ? 'Hide' : 'Show',
+      toggleHowTo: () => {
+        const next = !this.showHowTo();
+        try { localStorage.setItem('ft.howTo', next ? '1' : '0'); } catch (e) {}
+        this.setState({ howTo: next });
+      },
       tipSavings: s.tip === 'savings', tipOneOff: s.tip === 'oneOff',
       showTipSavings: () => this.setState({ tip: 'savings' }),
       showTipOneOff: () => this.setState({ tip: 'oneOff' }),
