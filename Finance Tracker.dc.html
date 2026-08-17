@@ -30,6 +30,17 @@
     .btn { min-height: 44px; }
     h1 { font-size: clamp(24px, 7vw, 34px) !important; }
     input[type="checkbox"] { width: 18px; height: 18px; }
+    /* The two panes lie down: rail becomes a scrolling top bar. */
+    [data-shell] { flex-direction: column !important; }
+    [data-rail] { flex: none !important; position: static !important; height: auto !important;
+      flex-direction: row !important; align-items: center; overflow-x: auto; flex-wrap: nowrap;
+      gap: 6px !important; border-right: none !important;
+      border-bottom: 1px solid var(--color-divider); padding: 12px 14px !important; }
+    [data-rail] .btn { width: auto !important; white-space: nowrap; }
+    [data-railhead], [data-railspacer] { display: none !important; }
+    [data-profile] { flex: none; flex-direction: row !important; align-items: center;
+      margin-top: 0 !important; padding-top: 0 !important; border-top: none !important; }
+    [data-profile] .card-kicker, [data-profile-email] { display: none !important; }
     /* Ring stays 16px; the hit area reaches 44px. */
     [data-hit] { position: relative; }
     [data-hit]::after { content: ""; position: absolute; inset: -14px; }
@@ -63,28 +74,35 @@
   </sc-if>
 
   <sc-if value="{{ showApp }}" hint-placeholder-val="{{ true }}">
-    <div style="max-width: 1080px; margin: 0 auto; padding: 0 clamp(14px, 4vw, 24px) 64px;">
+    <div data-shell style="display: flex; align-items: stretch; min-height: 100vh;">
 
-      <div class="nav" style="padding: 20px 0 8px; flex-wrap: wrap; row-gap: 8px;">
-        <div class="nav-brand">Financial Tracker</div>
-        <span style="font-size: 12px; opacity: 0.55;">{{ userEmail }}</span>
-        <span style="font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--color-accent);">{{ liveLabel }}</span>
-        <button class="btn btn-secondary" onClick="{{ signOut }}">Sign out</button>
-      </div>
-
-      <div style="display: flex; gap: 4px; margin: 12px 0 24px; flex-wrap: wrap;">
-        <button class="btn {{ budgetTabClass }}" onClick="{{ goBudget }}">Budget</button>
-        <button class="btn {{ goalsTabClass }}" onClick="{{ goGoals }}">Goals</button>
-        <button class="btn {{ insightsTabClass }}" onClick="{{ goInsights }}">Insights</button>
-        <a href="Budget Setup.dc.html" class="btn btn-secondary" style="margin-left: auto; text-decoration: none;">Budget setup</a>
-      </div>
-
-      <div style="display: flex; flex-direction: column; gap: 10px; margin: -8px 0 26px; max-width: 760px;">
-        <div style="display: flex; align-items: baseline; gap: 10px;">
-          <div class="card-kicker" style="margin: 0;">Getting started</div>
-          <button class="btn btn-ghost" style="font-size: 11px; padding: 2px 8px;" onClick="{{ toggleHowTo }}">{{ howToLabel }}</button>
+      <nav data-rail style="flex: 0 0 224px; align-self: stretch; position: sticky; top: 0; height: 100vh; overflow-y: auto; display: flex; flex-direction: column; gap: 4px; padding: 22px 16px; border-right: 1px solid var(--color-divider); background: var(--color-neutral-900);">
+        <div data-railhead style="display: flex; align-items: baseline; gap: 8px; margin: 0 0 18px 2px;">
+          <div class="nav-brand">Financial Tracker</div>
+          <span style="font-size: 10px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--color-accent);">{{ liveLabel }}</span>
         </div>
-        <sc-if value="{{ showHowTo }}" hint-placeholder-val="{{ true }}">
+      <a href="Budget Setup.dc.html" class="btn btn-secondary" style="width: 100%; justify-content: flex-start; text-align: left; text-decoration: none;">Budget setup</a>
+      <button class="btn {{ budgetTabClass }}" style="width: 100%; justify-content: flex-start; text-align: left;" onClick="{{ goBudget }}">Budget tracking</button>
+      <button class="btn {{ goalsTabClass }}" style="width: 100%; justify-content: flex-start; text-align: left;" onClick="{{ goGoals }}">Financial goals</button>
+      <button class="btn {{ insightsTabClass }}" style="width: 100%; justify-content: flex-start; text-align: left;" onClick="{{ goInsights }}">Insights</button>
+        <div data-railspacer style="flex: 1 1 auto; min-height: 14px;"></div>
+      <div data-profile style="margin-top: 14px; padding-top: 14px; border-top: 1px solid var(--color-divider); display: flex; flex-direction: column; gap: 8px; align-items: flex-start;">
+        <div class="card-kicker" style="margin: 0;">Profile</div>
+        <div data-profile-email style="font-size: 12px; opacity: 0.6; word-break: break-all;">{{ userEmail }}</div>
+        <button class="btn btn-secondary" style="width: 100%; justify-content: flex-start;" onClick="{{ signOut }}">Sign out</button>
+      </div>
+      </nav>
+
+      <div data-pane style="flex: 1 1 auto; min-width: 0;">
+        <div style="max-width: 1000px; margin: 0 auto; padding: 26px clamp(14px, 4vw, 32px) 64px; display: flex; flex-direction: column;">
+
+
+      <div style="display: flex; flex-direction: column; gap: 12px; margin: 0 0 26px; max-width: 760px; padding: 12px 16px; border-radius: var(--radius-md); border: 1px solid var(--color-accent-700); background: var(--color-accent-900);">
+        <div style="display: flex; align-items: center; gap: 10px;">
+          <div style="font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--color-accent-300);">Getting started</div>
+          <button class="btn btn-ghost" style="font-size: 11px; padding: 2px 8px; margin-left: auto; color: var(--color-accent-300);" onClick="{{ toggleHowTo }}">{{ howToLabel }}</button>
+        </div>
+        <sc-if value="{{ showHowTo }}" hint-placeholder-val="{{ false }}">
           <ol style="list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 9px; counter-reset: step;">
             <li style="display: flex; gap: 11px; font-size: 13px; line-height: 1.55; opacity: 0.72; text-wrap: pretty;">
               <span style="flex: none; width: 18px; height: 18px; margin-top: 1px; display: grid; place-items: center; border-radius: 50%; border: 1px solid var(--color-accent-700); color: var(--color-accent-300); font-size: 10px; font-variant-numeric: tabular-nums;">1</span>
@@ -184,41 +202,48 @@
             <div class="card" style="padding: 16px 18px; gap: 6px; text-align: left; cursor: pointer; border: 1px solid transparent;" style-hover="{ borderColor: 'var(--color-accent)' }" role="button" onClick="{{ openAllSpend }}">
               <div style="display: flex; align-items: center; gap: 6px;">
                 <div class="card-kicker">Total spend</div>
-                <span title="Real consumption only. Pot deposits and pot withdrawals are internal moves between your own accounts and are excluded in both directions, so money is counted once — when it leaves for a merchant. Card refunds net off their category. Savings are shown separately." style="font-size: 11px; opacity: 0.45; cursor: help;">ⓘ</span>
+                <span title="{{ spendTip }}" style="font-size: 11px; opacity: 0.45; cursor: help;">ⓘ</span>
               </div>
               <div style="font-family: var(--font-heading); font-size: clamp(20px, 2.2vw, 30px); line-height: 1; white-space: nowrap;">{{ totalSpend }}</div>
               <div style="font-size: 11px; opacity: 0.5;">{{ monthCountLabel }}</div>
-              <div style="display: grid; gap: 2px; font-size: 11px; opacity: 0.45;">
-                <div>{{ transferExcludedLabel }}</div>
-                <div>{{ refundLabel }}</div>
-                <div>{{ savingsOutLabel }}</div>
-                <div>{{ oneOffOutLabel }}</div>
+            </div>
+            <div class="card" style="padding: 16px 18px; gap: 6px;">
+              <div style="display: flex; align-items: center; gap: 6px;">
+                <div class="card-kicker">Monthly average</div>
+                <span title="{{ targetLabel }}" style="font-size: 11px; opacity: 0.45; cursor: help;">ⓘ</span>
               </div>
-              <div style="font-size: 11px; color: var(--color-accent-300);">See every transaction →</div>
-            </div>
-            <div class="card" style="padding: 16px 18px; gap: 6px;">
-              <div class="card-kicker">Monthly average</div>
               <div style="font-family: var(--font-heading); font-size: clamp(20px, 2.2vw, 30px); line-height: 1; white-space: nowrap;">{{ monthlyAvg }}</div>
-              <div style="font-size: 11px; opacity: 0.5;">{{ targetLabel }}</div>
             </div>
             <div class="card" style="padding: 16px 18px; gap: 6px;">
-              <div class="card-kicker">{{ varianceKicker }}</div>
+              <div style="display: flex; align-items: center; gap: 6px;">
+                <div class="card-kicker">{{ varianceKicker }}</div>
+                <span title="{{ variancePct }}" style="font-size: 11px; opacity: 0.45; cursor: help;">ⓘ</span>
+              </div>
               <div style="{{ varianceStyle }}">{{ variance }}</div>
-              <div style="font-size: 11px; opacity: 0.5;">{{ variancePct }}</div>
             </div>
             <div class="card" style="padding: 16px 18px; gap: 6px; text-align: left; cursor: pointer; border: 1px solid transparent;" style-hover="{ borderColor: 'var(--color-accent)' }" role="button" tabindex="0" onClick="{{ openSalary }}">
-              <div class="card-kicker">{{ salaryLabel }}</div>
+              <div style="display: flex; align-items: center; gap: 6px;">
+                <div class="card-kicker">{{ salaryLabel }}</div>
+                <span title="{{ salaryTip }}" style="font-size: 11px; opacity: 0.45; cursor: help;">ⓘ</span>
+              </div>
               <div style="font-family: var(--font-heading); font-size: clamp(20px, 2.2vw, 30px); line-height: 1; white-space: nowrap;">{{ monthlySalary }}</div>
-              <div style="font-size: 11px; opacity: 0.5;">{{ totalSalaryLabel }}</div>
+              <div data-nodrill onClick="{{ stopClick }}" class="field" style="gap: 5px; margin-top: 4px;">
+                <label for="salterms" style="font-size: 10px; letter-spacing: 0.08em; text-transform: uppercase; opacity: 0.55;">Salary matches</label>
+                <input id="salterms" class="input" style="font-size: 13px;" type="text" value="{{ salaryTerms }}" onChange="{{ onSalaryTerms }}" placeholder="Your employer's name">
+                <div style="font-size: 11px; opacity: 0.45; text-wrap: pretty;">{{ salaryTermsNote }}</div>
+              </div>
             </div>
             <div class="card" style="padding: 16px 18px; gap: 6px; text-align: left; cursor: pointer; border: 1px solid transparent;" style-hover="{ borderColor: 'var(--color-accent)' }" role="button" tabindex="0" onClick="{{ openOther }}">
               <div style="display: flex; align-items: center; gap: 6px;">
                 <div class="card-kicker">Other income</div>
-                <span title="Pot withdrawals are excluded. Money moved out of a pot to cover main-card spending is your own money coming back, not new income — counting it would double-count the original salary." style="display: inline-grid; place-items: center; width: 14px; height: 14px; border-radius: 50%; border: 1px solid var(--color-accent); color: var(--color-accent); font-size: 9px; line-height: 1; cursor: help;">?</span>
+                <span title="{{ otherTip }}" style="display: inline-grid; place-items: center; width: 14px; height: 14px; border-radius: 50%; border: 1px solid var(--color-accent); color: var(--color-accent); font-size: 9px; line-height: 1; cursor: help;">?</span>
               </div>
               <div style="font-family: var(--font-heading); font-size: clamp(20px, 2.2vw, 30px); line-height: 1; white-space: nowrap;">{{ monthlyOther }}</div>
-              <div style="font-size: 11px; opacity: 0.5;">{{ totalOtherLabel }}</div>
-              <div style="font-size: 11px; opacity: 0.45;">{{ potExcludedLabel }}</div>
+              <div data-nodrill onClick="{{ stopClick }}" class="field" style="gap: 5px; margin-top: 4px;">
+                <label for="othterms" style="font-size: 10px; letter-spacing: 0.08em; text-transform: uppercase; opacity: 0.55;">Other income matches</label>
+                <input id="othterms" class="input" style="font-size: 13px;" type="text" value="{{ otherTerms }}" onChange="{{ onOtherTerms }}" placeholder="Rent, Dividend">
+                <div style="font-size: 11px; opacity: 0.45; text-wrap: pretty;">{{ otherTermsNote }}</div>
+              </div>
             </div>
           </div>
 
@@ -353,34 +378,32 @@
 
       <sc-if value="{{ isGoals }}" hint-placeholder-val="{{ false }}">
         <div style="display: flex; flex-direction: column; gap: 24px;">
-          <div data-stack style="display: grid; grid-template-columns: minmax(220px, 260px) 1fr; gap: 20px; align-items: start;">
-
-            <div class="card" style="padding: 16px; gap: 10px;">
-              <div style="display: flex; align-items: center; gap: 10px;">
-                <div class="card-title" style="margin-right: auto;">Your goals</div>
-                <button class="btn btn-ghost" onClick="{{ newGoal }}">New</button>
-              </div>
-              <div style="display: flex; flex-direction: column; gap: 6px;">
-                <sc-for list="{{ goalList }}" as="g" hint-placeholder-count="3">
-                  <button style="{{ g.style }}" onClick="{{ g.pick }}">
-                    <span style="font-size: 14px;">{{ g.name }}</span>
-                    <span style="font-size: 11px; opacity: 0.55; font-variant-numeric: tabular-nums;">{{ g.line }}</span>
-                    <span style="height: 4px; border-radius: 2px; background: var(--color-neutral-800); overflow: hidden; margin-top: 4px;">
-                      <span style="{{ g.barStyle }}"></span>
-                    </span>
-                  </button>
-                </sc-for>
-              </div>
-              <sc-if value="{{ noGoals }}" hint-placeholder-val="{{ false }}">
-                <p style="font-size: 12px; opacity: 0.5; margin: 4px 0 0;">No goals yet. Fill in the form and save.</p>
-              </sc-if>
+          <div class="card" style="padding: 18px; gap: 16px;">
+            <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+              <div class="card-title" style="margin-right: auto;">Your goals</div>
+              <button class="btn btn-secondary" onClick="{{ newGoal }}">New goal</button>
             </div>
+            <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+              <sc-for list="{{ goalList }}" as="g" hint-placeholder-count="3">
+                <button style="{{ g.style }}" onClick="{{ g.pick }}">
+                  <span style="font-size: 14px;">{{ g.name }}</span>
+                  <span style="font-size: 11px; opacity: 0.55; font-variant-numeric: tabular-nums;">{{ g.line }}</span>
+                  <span style="height: 4px; border-radius: 2px; background: var(--color-neutral-800); overflow: hidden; margin-top: 4px;">
+                    <span style="{{ g.barStyle }}"></span>
+                  </span>
+                </button>
+              </sc-for>
+            </div>
+            <sc-if value="{{ noGoals }}" hint-placeholder-val="{{ false }}">
+              <p style="font-size: 12px; opacity: 0.5; margin: 0;">No goals yet. Fill in the fields below and save.</p>
+            </sc-if>
 
-            <div class="card" style="padding: 18px; gap: 14px;">
-              <div style="display: flex; align-items: baseline; gap: 10px;">
-                <div class="card-title" style="margin-right: auto;">{{ editorTitle }}</div>
-                <span style="font-size: 11px; opacity: 0.45;">Every field is optional</span>
-              </div>
+            <div style="height: 1px; background: var(--color-divider);"></div>
+
+            <div style="display: flex; align-items: baseline; gap: 10px;">
+              <div class="card-kicker" style="margin: 0; margin-right: auto;">{{ editorTitle }}</div>
+              <span style="font-size: 11px; opacity: 0.45;">Every field is optional</span>
+            </div>
 
               <div class="field">
                 <label for="gname">Goal name</label>
@@ -430,7 +453,6 @@
                   <span style="font-size: 12px; opacity: 0.7;">{{ goalMsg }}</span>
                 </sc-if>
               </div>
-            </div>
           </div>
 
           <div class="card" style="padding: 18px; gap: 16px;">
@@ -477,17 +499,47 @@
                 <div style="font-size: 11px; opacity: 0.5;">{{ reachedMonths }}</div>
               </div>
               <div style="display: flex; flex-direction: column; gap: 6px;">
-                <div class="card-kicker">Growth earned by then</div>
-                <div style="font-family: var(--font-heading); font-size: clamp(20px, 2.1vw, 28px); line-height: 1; white-space: nowrap;">{{ growthEarned }}</div>
-                <div style="font-size: 11px; opacity: 0.5;">{{ growthVsFlat }}</div>
-              </div>
-              <div style="display: flex; flex-direction: column; gap: 6px;">
                 <div class="card-kicker">To hit target date</div>
                 <div style="font-family: var(--font-heading); font-size: clamp(20px, 2.1vw, 28px); line-height: 1; white-space: nowrap;">{{ neededMonthly }}</div>
                 <div style="font-size: 11px; opacity: 0.5;">{{ neededMonthlyNote }}</div>
               </div>
             </div>
 
+            <div style="display: flex; gap: 4px;">
+              <button class="btn {{ fcGraphClass }}" onClick="{{ showFcGraph }}">Graph</button>
+              <button class="btn {{ fcTableClass }}" onClick="{{ showFcTable }}">Table</button>
+            </div>
+
+            <sc-if value="{{ fcGraph }}" hint-placeholder-val="{{ true }}">
+              <div style="display: flex; flex-direction: column; gap: 8px;">
+                <div style="position: relative;">
+                  <svg viewBox="0 0 720 232" preserveAspectRatio="xMidYMid meet" style="width: 100%; height: auto; display: block;">
+                    <sc-for list="{{ chartYTicks }}" as="t" hint-placeholder-count="5">
+                      <path d="{{ t.grid }}" stroke="var(--color-divider)" stroke-width="1" fill="none"></path>
+                    </sc-for>
+                    <path d="{{ chartArea }}" fill="var(--color-accent-900)"></path>
+                    <path d="{{ chartTarget }}" stroke="var(--color-neutral-500)" stroke-width="1" stroke-dasharray="4 4" fill="none"></path>
+                    <path d="{{ chartReach }}" stroke="var(--color-accent)" stroke-width="1" stroke-dasharray="3 4" fill="none"></path>
+                    <path d="{{ chartPath }}" stroke="var(--color-accent)" stroke-width="2" fill="none"></path>
+                  </svg>
+                  <sc-for list="{{ chartYTicks }}" as="t" hint-placeholder-count="5">
+                    <div style="{{ t.style }}">{{ t.label }}</div>
+                  </sc-for>
+                  <sc-for list="{{ chartXTicks }}" as="t" hint-placeholder-count="6">
+                    <div style="{{ t.style }}">{{ t.label }}</div>
+                  </sc-for>
+                  <sc-if value="{{ chartMet }}" hint-placeholder-val="{{ false }}">
+                    <div style="{{ chartReachStyle }}">Target achieved</div>
+                  </sc-if>
+                </div>
+                <div style="display: flex; gap: 18px; flex-wrap: wrap; font-size: 11px; opacity: 0.6;">
+                  <span>{{ chartTargetLabel }}</span>
+                  <span>{{ chartReachLabel }}</span>
+                </div>
+              </div>
+            </sc-if>
+
+            <sc-if value="{{ fcTable }}" hint-placeholder-val="{{ false }}">
             <div style="overflow-x: auto;"><table class="table" style="min-width: 560px;">
               <thead>
                 <tr>
@@ -511,6 +563,7 @@
               </tbody>
             </table>
             </div>
+            </sc-if>
             <sc-if value="{{ forecastEmpty }}" hint-placeholder-val="{{ true }}">
               <p style="font-size: 13px; opacity: 0.5; margin: 0;">{{ forecastEmptyNote }}</p>
             </sc-if>
@@ -530,7 +583,7 @@
           <div class="card" style="padding: 18px; gap: 14px;">
             <div class="card-kicker">Advice</div>
             <div class="card-title">AI review of your spending</div>
-            <p style="font-size: 13px; opacity: 0.55; margin: 0;">Sends your category totals and budget target for analysis. No transaction descriptions leave the page.</p>
+            <p style="font-size: 13px; opacity: 0.55; margin: 0; text-wrap: pretty;">A financial advisor's read on your spending against the 50/30/20 split, where money is leaking, and what to cut. Sends category totals and budget targets only — no transaction descriptions leave the page.</p>
             <button class="btn btn-primary" style="align-self: flex-start;" onClick="{{ runAi }}">{{ aiButtonLabel }}</button>
             <sc-if value="{{ aiText }}" hint-placeholder-val="{{ false }}">
               <div style="font-size: 14px; line-height: 1.75; white-space: pre-wrap; border-left: 2px solid var(--color-accent); padding-left: 14px; opacity: 0.9;">{{ aiText }}</div>
@@ -539,6 +592,7 @@
         </div>
       </sc-if>
 
+      </div></div>
     </div>
   </sc-if>
 </div>
@@ -549,7 +603,7 @@ class Component extends DCLogic {
   state = {
     ready: false, user: null, signUp: false, email: '', password: '', authError: '',
     tab: 'budget', rows: [], sources: [], goals: [], budget: [], excluded: [], catMonth: 'all',
-    exSavings: null, exOneOff: null, tip: '', howTo: null,
+    exSavings: null, exOneOff: null, tip: '', howTo: null, salaryTerms: null, otherTerms: null, fcView: 'graph',
     accountType: 'main', uploadMsg: '', goalMsg: '', savingGoal: false,
     dId: null, dName: '', dTarget: '', dCurrent: '', dMonthly: '', dType: '', dRate: '', dDate: '',
     aiText: '', aiLoading: false, live: false,
@@ -562,8 +616,10 @@ class Component extends DCLogic {
   // Excluded symmetrically, so a main→pot move and the pot's own copy of it both drop out
   // and the eventual card payment from the pot is the only time that money is counted.
   isInternal(r) {
-    if ((r.type || '') === 'Pot transfer') return true;
-    const hay = ((r.type || '') + ' ' + (r.description || '')).toLowerCase();
+    // Type first, normalised — "Pot transfer", "pot_transfer" and "POT TRANSFER" are the
+    // same thing, and an exact-string test quietly let the variants through as spend.
+    if (/\bpot\b/.test(this.norm(r.type))) return true;
+    const hay = this.norm((r.type || '') + ' ' + (r.description || '') + ' ' + (r.category || ''));
     return /\bpot\b/.test(hay);
   }
 
@@ -573,7 +629,10 @@ class Component extends DCLogic {
     if (this.isInternal(r)) return 'transfer';
     if (amount < 0) return 'spend';
     const hay = (r.description || '') + ' ' + (r.category || '');
-    if (this.fuzzyMatch(hay, String(this.props.salaryMatch ?? 'Allvue'))) return 'salary';
+    if (this.matchesAny(hay, this.salaryTerms())) return 'salary';
+    // Named other-income terms win over the refund rule: a credit the user has told us is
+    // income should not be netted off a spending category.
+    if (this.matchesAny(hay, this.otherTerms())) return 'other';
     // A credit on a card is a merchant refund, not income — it nets off the category.
     if ((r.type || '') === 'Card payment') return 'refund';
     return 'other';
@@ -631,6 +690,8 @@ class Component extends DCLogic {
     try {
       const mod = await import('https://esm.sh/@supabase/supabase-js@2');
       this.sb = mod.createClient(url, key);
+      const hash = (location.hash || '').replace('#', '');
+      if (['budget', 'goals', 'insights'].includes(hash)) this.setState({ tab: hash });
       const { data } = await this.sb.auth.getSession();
       this.setState({ ready: true, user: data?.session?.user || null });
       this.sub = this.sb.auth.onAuthStateChange((_e, session) => {
@@ -694,10 +755,36 @@ class Component extends DCLogic {
   // with no statements yet always sees it, dismissal or not.
   showHowTo() {
     if (this.state.howTo !== null) return this.state.howTo;
-    if (!this.state.rows.length) return true;
     let saved = null;
     try { saved = localStorage.getItem('ft.howTo'); } catch (e) {}
-    return saved !== '0';
+    return saved === '1';
+  }
+
+  // Comma-separated match terms. Stored per browser so a shared login does not
+  // overwrite the other person's list.
+  terms(which) {
+    const st = which === 'salary' ? this.state.salaryTerms : this.state.otherTerms;
+    if (st !== null) return st;
+    let saved = null;
+    try { saved = localStorage.getItem('ft.' + which + 'Terms'); } catch (e) {}
+    if (saved !== null) return saved;
+    return which === 'salary' ? String(this.props.salaryMatch ?? 'Allvue') : '';
+  }
+
+  termList(which) {
+    return this.terms(which).split(',').map(t => t.trim()).filter(Boolean);
+  }
+
+  salaryTerms() { return this.termList('salary'); }
+  otherTerms() { return this.termList('other'); }
+
+  matchesAny(hay, list) {
+    return list.some(t => this.fuzzyMatch(hay, t));
+  }
+
+  setTerms(which, value) {
+    try { localStorage.setItem('ft.' + which + 'Terms', value); } catch (e) {}
+    this.setState(which === 'salary' ? { salaryTerms: value } : { otherTerms: value });
   }
 
   exSavings() {
@@ -745,7 +832,6 @@ class Component extends DCLogic {
     const excluded = new Set(this.state.excluded);
     const rows = this.state.rows.filter(r => !excluded.has(r.type));
     const byCategory = {}, byMonth = {}, byCatMonth = {};
-    const needle = String(this.props.salaryMatch ?? 'Allvue');
     const splitSavings = this.exSavings();
     const splitOneOff = this.exOneOff();
     let totalSpend = 0, salaryIncome = 0, otherIncome = 0, refunds = 0,
@@ -955,6 +1041,74 @@ class Component extends DCLogic {
   };
 
   // Month-by-month compounding with a level contribution.
+  buildChart(tableYears, current, monthly, rate, target, reached, canForecast) {
+    const blank = { chartPath: '', chartArea: '', chartTarget: '', chartReach: '', chartXTicks: [],
+      chartYTicks: [], chartMet: false, chartReachStyle: {}, chartTargetLabel: '', chartReachLabel: '' };
+    if (!canForecast) return blank;
+    // Always frame the meet point, even when the table stops well short of it.
+    const years = Math.max(6, (tableYears || 1) + 5, reached !== null ? Math.ceil(reached / 12) + 1 : 0);
+    const months = years * 12;
+    // target null so the projection never stops early — the tail past the goal is the point
+    const p = this.project(current || 0, monthly || 0, rate || 0, null, months);
+    const series = p.series.slice(0, months + 1);
+    if (series.length < 2) return blank;
+    const top = Math.max(target || 0, series[series.length - 1].balance) * 1.08 || 1;
+    const L = 56, R = 712, T = 14, B = 186;
+    const x = (m) => L + (m / months) * (R - L);
+    const y = (v) => B - (Math.max(0, v) / top) * (B - T);
+    const compact = (v) => { const sym = this.props.currency || '£';
+      return v >= 1000000 ? sym + (v / 1000000).toFixed(1) + 'm'
+        : v >= 1000 ? sym + Math.round(v / 1000) + 'k' : sym + Math.round(v); };
+    let d = '';
+    for (let m = 0; m < series.length; m += 2) d += (d ? ' L ' : 'M ') + x(m).toFixed(1) + ' ' + y(series[m].balance).toFixed(1);
+    const last = series.length - 1;
+    d += ' L ' + x(last).toFixed(1) + ' ' + y(series[last].balance).toFixed(1);
+
+    const thisYear = new Date().getFullYear();
+    const step = Math.max(1, Math.round(years / 6));
+    const chartXTicks = [];
+    for (let yr = 0; yr <= years; yr += step) chartXTicks.push({
+      label: String(thisYear + yr),
+      style: { position: 'absolute', left: (x(yr * 12) / 720 * 100) + '%', top: (196 / 232 * 100) + '%',
+        transform: 'translateX(-50%)', fontSize: '10px', color: 'var(--color-neutral-400)',
+        whiteSpace: 'nowrap', pointerEvents: 'none' }
+    });
+
+    const chartYTicks = [];
+    for (let i = 0; i <= 4; i++) {
+      const v = (top / 4) * i;
+      const yy = y(v);
+      chartYTicks.push({
+        grid: 'M ' + L + ' ' + yy.toFixed(1) + ' L ' + R + ' ' + yy.toFixed(1),
+        label: compact(v),
+        style: { position: 'absolute', left: 0, width: (48 / 720 * 100) + '%', textAlign: 'right',
+          top: (yy / 232 * 100) + '%', transform: 'translateY(-50%)', fontSize: '10px',
+          color: 'var(--color-neutral-400)', whiteSpace: 'nowrap', pointerEvents: 'none' }
+      });
+    }
+
+    const met = reached !== null && reached <= months;
+    const rx = met ? x(reached) : 0;
+    // Same arithmetic as the "Target reached" stat, so the two cannot disagree.
+    let metYear = '';
+    if (met) { const dt = new Date(); dt.setMonth(dt.getMonth() + reached); metYear = dt.getFullYear(); }
+    return {
+      chartPath: d,
+      chartArea: d + ' L ' + x(last).toFixed(1) + ' ' + B + ' L ' + L + ' ' + B + ' Z',
+      chartTarget: target ? 'M ' + L + ' ' + y(target).toFixed(1) + ' L ' + R + ' ' + y(target).toFixed(1) : '',
+      chartReach: met ? 'M ' + rx.toFixed(1) + ' ' + B + ' L ' + rx.toFixed(1) + ' ' + T : '',
+      chartMet: met,
+      chartReachStyle: {
+        position: 'absolute', left: (rx / 720 * 100) + '%', top: (18 / 232 * 100) + '%',
+        transform: rx > 520 ? 'translateX(calc(-100% - 6px))' : 'translateX(6px)',
+        fontSize: '11px', color: 'var(--color-accent)', whiteSpace: 'nowrap', pointerEvents: 'none'
+      },
+      chartXTicks, chartYTicks,
+      chartTargetLabel: target ? 'Dashed grey: target ' + this.money(target) : 'No target set',
+      chartReachLabel: met ? 'Dotted line: target achieved ' + metYear : 'Target not reached in this range'
+    };
+  }
+
   project(current, monthly, ratePct, target, capMonths) {
     const r = (Number(ratePct) || 0) / 100 / 12;
     let balance = Number(current) || 0, paid = 0, reached = null;
@@ -1000,12 +1154,30 @@ class Component extends DCLogic {
         + ' unbudgeted categories are not overspending, they are simply not budgeted yet.'
       : 'Total monthly spend is ' + this.money(a.monthlyAverage) + ' against a flat target of '
         + this.money(this.target()) + '/mo covering everything.';
-    const prompt = 'You are a blunt, practical personal finance coach in the UK. '
-      + basis + ' Monthly income ' + this.money(a.monthlyIncome)
-      + '. Spend per category per month:\n' + cats
-      + '\nWrite four short paragraphs: where the money goes, the two categories worth cutting and by how much, '
-      + 'one habit change, and what a realistic budget for the unbudgeted categories would be worth over a year. '
-      + 'Do not describe unbudgeted categories as over budget. No headings, no bullet points, no preamble.';
+    // 50/30/20 is stated as the frame the review is measured against, with the category
+    // names handed over so the model splits them rather than inventing its own totals.
+    const income = a.monthlyIncome;
+    const rule = income > 0
+      ? 'On a 50/30/20 split their income of ' + this.money(income) + '/mo allows '
+        + this.money(income * 0.5) + ' for needs, ' + this.money(income * 0.3)
+        + ' for wants and ' + this.money(income * 0.2) + ' for savings and debt repayment. '
+        + 'Assign every category below to needs, wants or savings yourself, total each bucket, '
+        + 'and report the three actual percentages against 50/30/20.'
+      : 'No income is recorded, so judge the categories against each other rather than against '
+        + 'a 50/30/20 split, and say that income is missing.';
+    const prompt = 'You are a personal financial advisor advising a UK client. Direct, specific, '
+      + 'numerate; no jargon and no flattery. '
+      + rule + ' ' + basis
+      + '\nSpend per category per month:\n' + cats
+      + '\n\nWrite four short paragraphs, in this order and with no headings, bullets or preamble:'
+      + '\n1. The 50/30/20 verdict: the three bucket totals and percentages, and which bucket is out of line.'
+      + '\n2. Expenditure leaks: categories where spend looks like it is drifting or repeating without '
+      + 'returning value — subscriptions, delivery, small frequent transactions, or any category running well '
+      + 'above its budget line. Name them with figures and say what you predict they will cost over a year if untouched.'
+      + '\n3. Savings tips: three concrete changes with the monthly and annual amount each would free up, '
+      + 'ordered by how much they save.'
+      + '\n4. What hitting the 20% savings figure would take from here, in pounds a month.'
+      + '\nDo not describe unbudgeted categories as over budget. Do not recommend products or providers.';
     try {
       const out = await window.claude.complete(prompt);
       this.setState({ aiLoading: false, aiText: out });
@@ -1075,14 +1247,16 @@ class Component extends DCLogic {
     });
     const selectedUnits = units.filter(u => s.selected.includes(u.key));
 
-    const needleProp = String(this.props.salaryMatch ?? 'Allvue');
+    const salTerms = this.salaryTerms();
+    const othTerms = this.otherTerms();
+    const salLabel = salTerms.length ? salTerms.join(', ') : 'nothing yet';
     const drill = s.drill;
     let drillVals = { isDrill: false, drillRows: [], drillMonthChips: [] };
     if (drill) {
       const spendish = r => ['spend', 'refund'].includes(this.classify(r));
       const inCat = drill.kind === 'income'
         ? a.rows.filter(r => parseFloat(r.amount) > 0
-            && this.fuzzyMatch((r.description || '') + ' ' + (r.category || ''), needleProp) === drill.salary
+            && this.matchesAny((r.description || '') + ' ' + (r.category || ''), salTerms) === drill.salary
             && (drill.salary || this.classify(r) === 'other'))
         : drill.kind === 'allSpend'
           // Everything the headline counts, so the drill total reconciles to it exactly.
@@ -1100,7 +1274,7 @@ class Component extends DCLogic {
         drillKicker: drill.kind === 'income' ? 'Income detail'
           : drill.kind === 'allSpend' ? 'Spend detail' : 'Category detail',
         drillMembersLabel: drill.kind === 'income'
-          ? (drill.salary ? 'Fuzzy match on “' + needleProp + '”' : 'Everything not matching “' + needleProp + '”')
+          ? (drill.salary ? 'Fuzzy match on ' + salLabel : 'Every credit not matching ' + salLabel)
           : drill.kind === 'allSpend'
             ? 'Largest first · pot transfers excluded'
               + (this.exSavings() ? ' · savings excluded' : '')
@@ -1174,6 +1348,10 @@ class Component extends DCLogic {
         pct: target ? Math.min(100, (pt.balance / target) * 100).toFixed(0) + '%' : '—'
       });
     }
+
+    // The graph always runs five years past the table, so the curve after the goal is
+    // visible rather than ending on the moment it is met.
+    const chart = this.buildChart(forecastRows.length, current, monthly, rate, target, reached, canForecast);
 
     let neededMonthly = '—', neededMonthlyNote = 'Set a target date';
     if (s.dDate && target !== null) {
@@ -1267,11 +1445,36 @@ class Component extends DCLogic {
         color: effVariance > 0 ? 'var(--color-over)' : 'var(--color-under)' },
       monthlyIncome: this.signed(a.monthlyIncome),
       totalIncomeLabel: this.signed(a.totalIncome) + ' all time',
-      salaryLabel: needleProp + ' income',
+      salaryLabel: 'Salary income',
+      stopClick: e => e.stopPropagation(),
+      salaryTerms: this.terms('salary'),
+      otherTerms: this.terms('other'),
+      onSalaryTerms: e => this.setTerms('salary', e.target.value),
+      onOtherTerms: e => this.setTerms('other', e.target.value),
+      salaryTermsNote: salTerms.length
+        ? 'Credits matching ' + salLabel + ' count as salary.'
+        : 'No terms set — no credit is counted as salary yet.',
+      otherTermsNote: othTerms.length
+        ? 'Credits matching ' + othTerms.join(', ') + ' count as income even on a card.'
+        : 'Empty: every remaining credit counts as other income.',
       monthlySalary: this.signed(a.monthlySalary),
       totalSalaryLabel: this.signed(a.salaryIncome) + ' all time',
       monthlyOther: this.signed(a.monthlyOther),
       totalOtherLabel: this.signed(a.otherIncome) + ' all time',
+      spendTip: [
+        'Real consumption only, over ' + a.months + (a.months === 1 ? ' month' : ' months') + '.',
+        a.transfersOut > 0 ? this.money(a.transfersOut) + ' in pot deposits excluded' : '',
+        a.transfersIn > 0 ? this.money(a.transfersIn) + ' in pot withdrawals excluded' : '',
+        a.refunds > 0 ? this.money(a.refunds) + ' in refunds netted off' : '',
+        a.savingsOut > 0 && this.exSavings() ? this.money(a.savingsOut) + ' to savings, counted separately' : '',
+        a.oneOffOut > 0 && this.exOneOff() ? this.money(a.oneOffOut) + ' in one-off payments, counted separately' : '',
+        'Click the card for every transaction.'
+      ].filter(Boolean).join(' · '),
+      salaryTip: this.signed(a.salaryIncome) + ' all time. '
+        + (this.salaryTerms().length ? 'Matching ' + this.salaryTerms().join(', ') + '.' : 'No salary terms set yet.'),
+      otherTip: this.signed(a.otherIncome) + ' all time. Pot withdrawals are excluded — money coming back out of '
+        + 'your own pot is not new income.'
+        + (a.transfersIn > 0 ? ' ' + this.money(a.transfersIn) + ' excluded.' : ''),
       potExcludedLabel: a.transfersIn > 0 ? this.money(a.transfersIn) + ' in pot withdrawals excluded' : '',
       transferExcludedLabel: a.transfersOut > 0 ? this.money(a.transfersOut) + ' in pot deposits excluded' : '',
       refundLabel: a.refunds > 0 ? this.money(a.refunds) + ' in refunds netted off' : '',
@@ -1282,7 +1485,7 @@ class Component extends DCLogic {
         ? this.money(a.oneOffOut) + ' in one-off payments, counted separately'
         : '',
       openAllSpend: () => this.setState({ drill: { kind: 'allSpend', name: 'All spend', members: [] }, drillMonth: 'all' }),
-      openSalary: () => this.setState({ drill: { kind: 'income', salary: true, name: needleProp + ' income', members: [] }, drillMonth: 'all' }),
+      openSalary: () => this.setState({ drill: { kind: 'income', salary: true, name: 'Salary income', members: [] }, drillMonth: 'all' }),
       openOther: () => this.setState({ drill: { kind: 'income', salary: false, name: 'Other income', members: [] }, drillMonth: 'all' }),
       categoryRows, monthBars, typeChips, noData: a.totalSpend === 0,
       exSavings: this.exSavings(),
@@ -1290,7 +1493,7 @@ class Component extends DCLogic {
       onExSavings: e => this.setState({ exSavings: e.target.checked }),
       onExOneOff: e => this.setState({ exOneOff: e.target.checked }),
       showHowTo: this.showHowTo(),
-      howToLabel: this.showHowTo() ? 'Hide' : 'Show',
+      howToLabel: this.showHowTo() ? 'Hide' : 'Read the steps',
       toggleHowTo: () => {
         const next = !this.showHowTo();
         try { localStorage.setItem('ft.howTo', next ? '1' : '0'); } catch (e) {}
@@ -1356,6 +1559,7 @@ class Component extends DCLogic {
           line: g.goal_amount ? this.money(g.current_amount || 0) + ' of ' + this.money(g.goal_amount) : 'No target set',
           pick: () => this.pickGoal(g),
           style: { display: 'flex', flexDirection: 'column', gap: '2px', textAlign: 'left', cursor: 'pointer',
+            flex: '0 1 190px', minWidth: '150px',
             padding: '10px 12px', borderRadius: 'var(--radius-md)', font: 'inherit', color: 'var(--color-text)',
             background: on ? 'var(--color-accent-900)' : 'transparent',
             border: '1px solid ' + (on ? 'var(--color-accent)' : 'var(--color-divider)') },
@@ -1385,7 +1589,12 @@ class Component extends DCLogic {
       growthVsFlat: atReach && flat.reached !== null && reached !== null && flat.reached > reached
         ? (flat.reached - reached) + ' months sooner than with no growth' : 'vs no growth',
       neededMonthly, neededMonthlyNote,
-      forecastRows,
+      forecastRows, ...chart,
+      fcGraph: s.fcView !== 'table', fcTable: s.fcView === 'table',
+      fcGraphClass: s.fcView !== 'table' ? 'btn-primary' : 'btn-secondary',
+      fcTableClass: s.fcView === 'table' ? 'btn-primary' : 'btn-secondary',
+      showFcGraph: () => this.setState({ fcView: 'graph' }),
+      showFcTable: () => this.setState({ fcView: 'table' }),
       forecastEmpty: forecastRows.length === 0,
       forecastEmptyNote: monthly === null && current === null
         ? 'Fill in what you have saved and what you put away each month to see a forecast.'

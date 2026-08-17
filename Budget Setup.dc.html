@@ -30,6 +30,17 @@
     .btn { min-height: 44px; }
     h1 { font-size: clamp(24px, 7vw, 34px) !important; }
     input[type="checkbox"] { width: 18px; height: 18px; }
+    /* The two panes lie down: rail becomes a scrolling top bar. */
+    [data-shell] { flex-direction: column !important; }
+    [data-rail] { flex: none !important; position: static !important; height: auto !important;
+      flex-direction: row !important; align-items: center; overflow-x: auto; flex-wrap: nowrap;
+      gap: 6px !important; border-right: none !important;
+      border-bottom: 1px solid var(--color-divider); padding: 12px 14px !important; }
+    [data-rail] .btn { width: auto !important; white-space: nowrap; }
+    [data-railhead], [data-railspacer] { display: none !important; }
+    [data-profile] { flex: none; flex-direction: row !important; align-items: center;
+      margin-top: 0 !important; padding-top: 0 !important; border-top: none !important; }
+    [data-profile] .card-kicker, [data-profile-email] { display: none !important; }
     /* Ring stays 16px; the hit area reaches 44px. */
     [data-hit] { position: relative; }
     [data-hit]::after { content: ""; position: absolute; inset: -14px; }
@@ -62,26 +73,35 @@
   </sc-if>
 
   <sc-if value="{{ showApp }}" hint-placeholder-val="{{ true }}">
-    <div style="max-width: 1080px; margin: 0 auto; padding: 0 clamp(14px, 4vw, 24px) 64px;">
+    <div data-shell style="display: flex; align-items: stretch; min-height: 100vh;">
 
-      <div class="nav" style="padding: 20px 0 8px; flex-wrap: wrap; row-gap: 8px;">
-        <div class="nav-brand">Budget setup</div>
-        <span style="font-size: 12px; opacity: 0.55;">{{ userEmail }}</span>
-        <span style="font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--color-accent);">{{ liveLabel }}</span>
-        <a href="Finance Tracker.dc.html" class="btn btn-secondary" style="text-decoration: none;">Tracker</a>
-      </div>
-
-      <div style="display: flex; gap: 4px; margin: 12px 0 28px; flex-wrap: wrap;">
-        <button class="btn {{ setupTabClass }}" onClick="{{ goSetup }}">Set up</button>
-        <button class="btn {{ compareTabClass }}" onClick="{{ goCompare }}">Budget vs actual</button>
-      </div>
-
-      <div style="display: flex; flex-direction: column; gap: 10px; margin: -14px 0 28px; max-width: 760px;">
-        <div style="display: flex; align-items: baseline; gap: 10px;">
-          <div class="card-kicker" style="margin: 0;">Getting started</div>
-          <button class="btn btn-ghost" style="font-size: 11px; padding: 2px 8px;" onClick="{{ toggleHowTo }}">{{ howToLabel }}</button>
+      <nav data-rail style="flex: 0 0 224px; align-self: stretch; position: sticky; top: 0; height: 100vh; overflow-y: auto; display: flex; flex-direction: column; gap: 4px; padding: 22px 16px; border-right: 1px solid var(--color-divider); background: var(--color-neutral-900);">
+        <div data-railhead style="display: flex; align-items: baseline; gap: 8px; margin: 0 0 18px 2px;">
+          <div class="nav-brand">Financial Tracker</div>
+          <span style="font-size: 10px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--color-accent);">{{ liveLabel }}</span>
         </div>
-        <sc-if value="{{ showHowTo }}" hint-placeholder-val="{{ true }}">
+      <button class="btn {{ setupTabClass }}" style="width: 100%; justify-content: flex-start; text-align: left;" onClick="{{ goSetup }}">Budget setup</button>
+      <a href="Finance Tracker.dc.html" class="btn btn-secondary" style="width: 100%; justify-content: flex-start; text-align: left; text-decoration: none;">Budget tracking</a>
+      <a href="Finance Tracker.dc.html#goals" class="btn btn-secondary" style="width: 100%; justify-content: flex-start; text-align: left; text-decoration: none;">Financial goals</a>
+      <button class="btn {{ compareTabClass }}" style="width: 100%; justify-content: flex-start; text-align: left;" onClick="{{ goCompare }}">Budget vs actual</button>
+        <div data-railspacer style="flex: 1 1 auto; min-height: 14px;"></div>
+      <div data-profile style="margin-top: 14px; padding-top: 14px; border-top: 1px solid var(--color-divider); display: flex; flex-direction: column; gap: 8px; align-items: flex-start;">
+        <div class="card-kicker" style="margin: 0;">Profile</div>
+        <div data-profile-email style="font-size: 12px; opacity: 0.6; word-break: break-all;">{{ userEmail }}</div>
+        <button class="btn btn-secondary" style="width: 100%; justify-content: flex-start;" onClick="{{ signOut }}">Sign out</button>
+      </div>
+      </nav>
+
+      <div data-pane style="flex: 1 1 auto; min-width: 0;">
+        <div style="max-width: 1000px; margin: 0 auto; padding: 26px clamp(14px, 4vw, 32px) 64px; display: flex; flex-direction: column;">
+
+
+      <div style="display: flex; flex-direction: column; gap: 12px; margin: 0 0 26px; max-width: 760px; padding: 12px 16px; border-radius: var(--radius-md); border: 1px solid var(--color-accent-700); background: var(--color-accent-900);">
+        <div style="display: flex; align-items: center; gap: 10px;">
+          <div style="font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--color-accent-300);">Getting started</div>
+          <button class="btn btn-ghost" style="font-size: 11px; padding: 2px 8px; margin-left: auto; color: var(--color-accent-300);" onClick="{{ toggleHowTo }}">{{ howToLabel }}</button>
+        </div>
+        <sc-if value="{{ showHowTo }}" hint-placeholder-val="{{ false }}">
           <div style="display: flex; flex-direction: column; gap: 12px;">
             <p style="font-size: 13px; line-height: 1.55; opacity: 0.72; margin: 0; text-wrap: pretty;">Set up your monthly expenses and shared expenses so you can tell from the start whether you are on or off track. Use the salary box to indicate your salary and the app will calculate how much money you have left as you add an expense.</p>
             <ol style="list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 9px;">
@@ -329,6 +349,7 @@
         </div>
       </sc-if>
 
+      </div></div>
     </div>
   </sc-if>
 
@@ -662,10 +683,9 @@ class Component extends DCLogic {
   // with no budget lines yet always sees it, dismissal or not.
   showHowTo() {
     if (this.state.howTo !== null) return this.state.howTo;
-    if (!this.state.lines.length) return true;
     let saved = null;
     try { saved = localStorage.getItem('bs.howTo'); } catch (e) {}
-    return saved !== '0';
+    return saved === '1';
   }
 
   renderVals() {
@@ -775,8 +795,9 @@ class Component extends DCLogic {
       showApp: !!s.user,
       userEmail: s.user?.email || '',
       liveLabel: s.live ? 'Live' : '',
+      signOut: () => this.sb.auth.signOut(),
       showHowTo: this.showHowTo(),
-      howToLabel: this.showHowTo() ? 'Hide' : 'Show',
+      howToLabel: this.showHowTo() ? 'Hide' : 'Read the steps',
       toggleHowTo: () => {
         const next = !this.showHowTo();
         try { localStorage.setItem('bs.howTo', next ? '1' : '0'); } catch (e) {}
