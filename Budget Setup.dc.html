@@ -1,0 +1,777 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="_ds/nocturne-93999d3a-d76b-46f8-9e35-9b45ced0adde/styles.css">
+<script src="_ds/nocturne-93999d3a-d76b-46f8-9e35-9b45ced0adde/_ds_bundle.js"></script>
+<script src="config.js" onerror="void 0"></script>
+<style>
+  html, body { margin: 0; background: var(--color-bg); color: var(--color-text); }
+  input[type="file"]::file-selector-button {
+    font: inherit; font-size: 14px; color: var(--color-text);
+    background: transparent; border: 1px solid var(--color-accent);
+    border-radius: var(--radius-md); padding: 5px 12px; margin-right: 10px; cursor: pointer;
+  }
+  a { color: var(--color-accent); }
+  a:hover { color: var(--color-accent-300); }
+  /* On/off target. Held at the accent's chroma and lightness so they read as
+     the same family, not as traffic lights bolted onto the palette. */
+  :root { --color-under: oklch(0.74 0.11 152); --color-over: oklch(0.68 0.15 24); }
+</style>
+</helmet>
+
+<div style="min-height: 100vh; background: var(--color-bg); color: var(--color-text); font-family: var(--font-body);">
+
+  <sc-if value="{{ showAuth }}" hint-placeholder-val="{{ false }}">
+    <div style="display: grid; place-items: center; min-height: 100vh; padding: 24px;">
+      <div class="card elev-md" style="width: min(400px, 100%); padding: 28px; gap: 14px;">
+        <div class="card-kicker">Personal finance</div>
+        <h2 style="font-size: 26px; margin: 0;">Budget setup</h2>
+        <p style="font-size: 13px; opacity: 0.6; margin: 0 0 6px;">Sign in to build and save your budget lines.</p>
+        <div class="field">
+          <label for="email">Email</label>
+          <input id="email" class="input" type="email" value="{{ email }}" onChange="{{ onEmail }}" placeholder="you@example.com">
+        </div>
+        <div class="field">
+          <label for="password">Password</label>
+          <input id="password" class="input" type="password" value="{{ password }}" onChange="{{ onPassword }}" placeholder="••••••••">
+        </div>
+        <sc-if value="{{ authError }}" hint-placeholder-val="{{ false }}">
+          <div style="font-size: 12px; color: var(--color-accent-300); background: var(--color-accent-900); border-radius: var(--radius-sm); padding: 8px 10px;">{{ authError }}</div>
+        </sc-if>
+        <button class="btn btn-primary btn-block" onClick="{{ submitAuth }}">Sign in</button>
+      </div>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{ showApp }}" hint-placeholder-val="{{ true }}">
+    <div style="max-width: 1080px; margin: 0 auto; padding: 0 24px 64px;">
+
+      <div class="nav" style="padding: 20px 0 8px;">
+        <div class="nav-brand">Budget setup</div>
+        <span style="font-size: 12px; opacity: 0.55;">{{ userEmail }}</span>
+        <span style="font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--color-accent);">{{ liveLabel }}</span>
+        <a href="Finance Tracker.dc.html" class="btn btn-secondary" style="text-decoration: none;">Tracker</a>
+      </div>
+
+      <div style="display: flex; gap: 4px; margin: 12px 0 28px;">
+        <button class="btn {{ setupTabClass }}" onClick="{{ goSetup }}">Set up</button>
+        <button class="btn {{ compareTabClass }}" onClick="{{ goCompare }}">Budget vs actual</button>
+      </div>
+
+      <sc-if value="{{ isSetup }}" hint-placeholder-val="{{ true }}">
+        <div style="display: flex; flex-direction: column; gap: 28px;">
+
+          <div style="max-width: 640px;">
+            <h1 style="font-size: 34px; line-height: 1.15; margin: 0 0 10px; font-weight: 500;">Name your bills, set a monthly target, tag a category.</h1>
+            <p style="font-size: 14px; opacity: 0.6; margin: 0; text-wrap: pretty;">Bill names are yours alone — call a line whatever you call it. The category is the tie back to your bank statements, so pick one that matches how the transactions are labelled.</p>
+          </div>
+
+          <div class="card elev-md" style="padding: 20px 22px; gap: 18px;">
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 22px; align-items: end;">
+              <div class="field" style="gap: 6px;">
+                <label for="salary" style="font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; opacity: 0.65;">Salary after deductions</label>
+                <input id="salary" class="input" style="font-family: var(--font-heading); font-size: clamp(22px, 2.6vw, 34px); padding: 4px 10px; height: auto; font-variant-numeric: tabular-nums;" type="number" step="0.01" value="{{ salary }}" onChange="{{ onSalary }}" placeholder="4379.00">
+                <div style="font-size: 11px; opacity: 0.5;">Take-home, per month</div>
+              </div>
+              <div style="display: flex; flex-direction: column; gap: 6px;">
+                <div class="card-kicker">Bills total</div>
+                <div style="font-family: var(--font-heading); font-size: clamp(22px, 2.6vw, 34px); line-height: 1; white-space: nowrap;">{{ budgetTotal }}</div>
+                <div style="font-size: 11px; opacity: 0.5;">{{ lineCountLabel }}</div>
+              </div>
+              <div style="display: flex; flex-direction: column; gap: 6px;">
+                <div class="card-kicker">Spare money</div>
+                <div style="{{ spareStyle }}">{{ spareMoney }}</div>
+                <div style="font-size: 11px; opacity: 0.5;">{{ spareLabel }}</div>
+              </div>
+              <div style="display: flex; flex-direction: column; gap: 6px;">
+                <div class="card-kicker">Pay joint account</div>
+                <div style="font-family: var(--font-heading); font-size: clamp(22px, 2.6vw, 34px); line-height: 1; white-space: nowrap; color: var(--color-accent);">{{ jointTotal }}</div>
+                <div style="font-size: 11px; opacity: 0.5;">{{ jointLabel }}</div>
+              </div>
+            </div>
+          </div>
+
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px;">
+            <div class="card" style="padding: 16px 18px; gap: 6px;">
+              <div class="card-kicker">Categories used</div>
+              <div style="font-family: var(--font-heading); font-size: clamp(20px, 2.2vw, 30px); line-height: 1;">{{ categoryCount }}</div>
+              <div style="font-size: 11px; opacity: 0.5;">{{ unmatchedLabel }}</div>
+            </div>
+            <div class="card" style="padding: 16px 18px; gap: 6px;">
+              <div class="card-kicker">Untargeted lines</div>
+              <div style="font-family: var(--font-heading); font-size: clamp(20px, 2.2vw, 30px); line-height: 1;">{{ blankCount }}</div>
+              <div style="font-size: 11px; opacity: 0.5;">Blank targets stay blank</div>
+            </div>
+          </div>
+
+          <div class="card" style="padding: 18px; gap: 14px;">
+            <div class="card-title">Drop a spreadsheet</div>
+            <p style="font-size: 13px; opacity: 0.55; margin: 0; text-wrap: pretty;">A CSV with three columns — bill name, monthly target, category. Header names are matched loosely, so “Bill”, “Name”, “Item” and “Description” all work, as do “Target”, “Amount” and “Budget”. Rows land in the table below for editing before you save.</p>
+            <div style="display: flex; align-items: center; gap: 14px; flex-wrap: wrap;">
+              <input type="file" accept=".csv" onChange="{{ onFile }}" style="font-size: 13px;">
+              <select class="input" style="width: auto;" value="{{ importMode }}" onChange="{{ onImportMode }}">
+                <option value="append">Add to my lines</option>
+                <option value="replace">Replace all my lines</option>
+              </select>
+              <label style="display: flex; align-items: center; gap: 7px; font-size: 13px; opacity: 0.7; cursor: pointer;">
+                <input type="checkbox" checked="{{ autoSuggest }}" onChange="{{ onAutoSuggest }}" style="accent-color: var(--color-accent); cursor: pointer;">
+                Suggest a category for each bill
+              </label>
+            </div>
+            <p style="font-size: 12px; opacity: 0.45; margin: 0; text-wrap: pretty;">Leave the category column out of your spreadsheet and each bill name is matched to a category already present in your statements. Suggestions are outlined and labelled, so you only have to correct the ones that are wrong.</p>
+            <sc-if value="{{ uploadMsg }}" hint-placeholder-val="{{ false }}">
+              <div style="font-size: 12px; color: var(--color-accent-300);">{{ uploadMsg }}</div>
+            </sc-if>
+          </div>
+
+          <div class="card" style="padding: 18px; gap: 14px;">
+            <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
+              <div class="card-title" style="margin-right: auto;">Budget lines</div>
+              <sc-if value="{{ blanksToFill }}" hint-placeholder-val="{{ false }}">
+                <button class="btn btn-secondary" onClick="{{ suggestCategories }}">{{ suggestLabel }}</button>
+              </sc-if>
+              <button class="btn btn-secondary" onClick="{{ addLine }}">Add line</button>
+              <button class="btn btn-primary" onClick="{{ saveAll }}">{{ saveLabel }}</button>
+            </div>
+            <sc-if value="{{ suggestMsg }}" hint-placeholder-val="{{ false }}">
+              <div style="font-size: 12px; color: var(--color-accent-300);">{{ suggestMsg }}</div>
+            </sc-if>
+
+            <sc-if value="{{ noLines }}" hint-placeholder-val="{{ false }}">
+              <p style="font-size: 13px; opacity: 0.5; margin: 0;">No budget lines yet. Drop a CSV above, or add one by hand.</p>
+            </sc-if>
+
+            <sc-if value="{{ hasLines }}" hint-placeholder-val="{{ true }}">
+              <div style="overflow-x: auto;">
+                <table class="table" style="min-width: 620px;">
+                  <thead>
+                    <tr>
+                      <th style="width: 36%;">Bill</th>
+                      <th style="width: 18%; text-align: right;">Monthly target</th>
+                      <th style="width: 28%;">Category</th>
+                      <th style="width: 10%; text-align: center;">Joint</th>
+                      <th style="width: 8%;"></th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <sc-for list="{{ lines }}" as="line" hint-placeholder-count="4">
+                      <tr>
+                        <td>
+                          <input class="input" style="width: 100%;" type="text" value="{{ line.bill }}" onChange="{{ line.setBill }}" placeholder="Rent, Netflix, gym…">
+                        </td>
+                        <td>
+                          <input class="input" style="width: 100%; text-align: right; font-variant-numeric: tabular-nums;" type="number" step="0.01" value="{{ line.target }}" onChange="{{ line.setTarget }}" placeholder="—">
+                        </td>
+                        <td>
+                          <sc-if value="{{ line.custom }}" hint-placeholder-val="{{ false }}">
+                            <div style="display: flex; gap: 6px;">
+                              <input class="input" style="{{ line.rowStyle }}" type="text" value="{{ line.category }}" onChange="{{ line.setCategory }}" placeholder="New category name" autofocus="{{ true }}">
+                              <button class="btn btn-ghost btn-icon" title="Choose from the list instead" onClick="{{ line.doneCustom }}">↩</button>
+                            </div>
+                          </sc-if>
+                          <sc-if value="{{ line.picking }}" hint-placeholder-val="{{ true }}">
+                            <select class="input" style="{{ line.rowStyle }}" value="{{ line.category }}" onChange="{{ line.pickCategory }}">
+                              <option value="">Choose a category…</option>
+                              <sc-for list="{{ line.catOptions }}" as="opt" hint-placeholder-count="6">
+                                <option value="{{ opt.name }}">{{ opt.name }}</option>
+                              </sc-for>
+                              <option value="__new__">＋ New category…</option>
+                            </select>
+                          </sc-if>
+                          <div style="font-size: 11px; margin-top: 4px; color: {{ line.matchColor }};">{{ line.matchLabel }}</div>
+                        </td>
+                        <td style="text-align: center;">
+                          <input type="checkbox" title="Paid from the joint account" checked="{{ line.joint }}" onChange="{{ line.setJoint }}" style="accent-color: var(--color-accent); cursor: pointer; width: 16px; height: 16px;">
+                        </td>
+                        <td style="text-align: right;">
+                          <button class="btn btn-ghost btn-icon" title="Delete line" onClick="{{ line.remove }}">✕</button>
+                        </td>
+                      </tr>
+                    </sc-for>
+                  </tbody>
+                </table>
+              </div>
+              <datalist id="budget-categories">
+                <sc-for list="{{ knownCategories }}" as="c" hint-placeholder-count="6">
+                  <option value="{{ c.name }}"></option>
+                </sc-for>
+              </datalist>
+            </sc-if>
+
+            <sc-if value="{{ saveMsg }}" hint-placeholder-val="{{ false }}">
+              <div style="font-size: 12px; color: var(--color-accent-300);">{{ saveMsg }}</div>
+            </sc-if>
+          </div>
+
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ isCompare }}" hint-placeholder-val="{{ false }}">
+        <div style="display: flex; flex-direction: column; gap: 28px;">
+
+          <div style="max-width: 640px;">
+            <h1 style="font-size: 34px; line-height: 1.15; margin: 0 0 10px; font-weight: 500;">Budget against what you actually spent.</h1>
+            <p style="font-size: 14px; opacity: 0.6; margin: 0; text-wrap: pretty;">{{ actualBasisLabel }}</p>
+          </div>
+
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px;">
+            <div class="card" style="padding: 16px 18px; gap: 6px;">
+              <div class="card-kicker">Budgeted</div>
+              <div style="font-family: var(--font-heading); font-size: clamp(20px, 2.2vw, 30px); line-height: 1; white-space: nowrap;">{{ budgetTotal }}</div>
+              <div style="font-size: 11px; opacity: 0.5;">a month</div>
+            </div>
+            <div class="card" style="padding: 16px 18px; gap: 6px;">
+              <div class="card-kicker">Actual</div>
+              <div style="font-family: var(--font-heading); font-size: clamp(20px, 2.2vw, 30px); line-height: 1; white-space: nowrap;">{{ actualTotal }}</div>
+              <div style="font-size: 11px; opacity: 0.5;">{{ monthCountLabel }}</div>
+            </div>
+            <div class="card" style="padding: 16px 18px; gap: 6px;">
+              <div class="card-kicker">Difference</div>
+              <div style="font-family: var(--font-heading); font-size: clamp(20px, 2.2vw, 30px); line-height: 1; white-space: nowrap; color: {{ diffColor }};">{{ diffTotal }}</div>
+              <div style="font-size: 11px; opacity: 0.5;">{{ diffLabel }}</div>
+            </div>
+          </div>
+
+          <div class="card" style="padding: 18px; gap: 14px;">
+            <div class="card-title">By category</div>
+            <sc-if value="{{ noCompare }}" hint-placeholder-val="{{ false }}">
+              <p style="font-size: 13px; opacity: 0.5; margin: 0;">Nothing to compare yet. Save some budget lines, and import statements on the tracker.</p>
+            </sc-if>
+            <sc-if value="{{ hasCompare }}" hint-placeholder-val="{{ true }}">
+              <div style="overflow-x: auto;">
+                <table class="table" style="min-width: 680px;">
+                  <thead>
+                    <tr>
+                      <th>Category</th>
+                      <th style="text-align: right;">Budget</th>
+                      <th style="text-align: right;">Actual</th>
+                      <th style="text-align: right;">Difference</th>
+                      <th style="width: 22%;"></th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <sc-for list="{{ compareRows }}" as="row" hint-placeholder-count="5">
+                      <tr>
+                        <td>
+                          <div>{{ row.name }}</div>
+                          <div style="font-size: 11px; opacity: 0.45;">{{ row.detail }}</div>
+                        </td>
+                        <td style="text-align: right; font-variant-numeric: tabular-nums;">{{ row.budget }}</td>
+                        <td style="text-align: right; font-variant-numeric: tabular-nums;">{{ row.actual }}</td>
+                        <td style="text-align: right; font-variant-numeric: tabular-nums; color: {{ row.diffColor }};">{{ row.diff }}</td>
+                        <td>
+                          <div style="height: 6px; border-radius: 3px; background: var(--color-neutral-800); overflow: hidden;">
+                            <div style="{{ row.barStyle }}"></div>
+                          </div>
+                        </td>
+                      </tr>
+                    </sc-for>
+                  </tbody>
+                </table>
+              </div>
+            </sc-if>
+          </div>
+
+        </div>
+      </sc-if>
+
+    </div>
+  </sc-if>
+
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;excludeSavings&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;Budget&quot;},&quot;excludeOneOff&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;Budget&quot;},&quot;currency&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;default&quot;:&quot;£&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;options&quot;:[&quot;£&quot;,&quot;$&quot;,&quot;€&quot;],&quot;section&quot;:&quot;Budget&quot;},&quot;supabaseUrl&quot;:{&quot;editor&quot;:&quot;text&quot;,&quot;default&quot;:&quot;&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Supabase&quot;},&quot;supabaseAnonKey&quot;:{&quot;editor&quot;:&quot;text&quot;,&quot;default&quot;:&quot;&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Supabase&quot;}}">
+class Component extends DCLogic {
+  state = {
+    ready: false, user: null, email: '', password: '', authError: '', live: false,
+    tab: 'setup', lines: [], txRows: [], uploadMsg: '', saveMsg: '', saving: false,
+    importMode: 'append', removed: [], suggesting: false, suggestMsg: '', autoSuggest: true,
+    salary: '', salaryDirty: false
+  };
+
+  async componentDidMount() {
+    // Credentials come from config.js (gitignored) or a tweak — never from this file, so
+    // the committed source carries no connection details and a collaborator without a
+    // config.js gets told to make one rather than silently landing in someone else's data.
+    const cfg = window.FINANCE_CONFIG || {};
+    const url = this.props.supabaseUrl || cfg.supabaseUrl || '';
+    const key = this.props.supabaseAnonKey || cfg.supabaseAnonKey || '';
+    if (!url || !key) {
+      this.setState({ ready: true, authError: 'No Supabase connection configured. Copy config.example.js to config.js and fill in your project URL and anon key, then reload.' });
+      return;
+    }
+    try {
+      const mod = await import('https://esm.sh/@supabase/supabase-js@2');
+      this.sb = mod.createClient(url, key);
+      const { data } = await this.sb.auth.getSession();
+      this.setState({ ready: true, user: data?.session?.user || null });
+      this.sub = this.sb.auth.onAuthStateChange((_e, session) => {
+        this.setState({ user: session?.user || null });
+        if (session?.user) this.loadAll(session.user.id);
+      });
+      if (data?.session?.user) this.loadAll(data.session.user.id);
+    } catch (err) {
+      this.setState({ ready: true, authError: 'Could not reach Supabase: ' + err.message });
+    }
+  }
+
+  componentWillUnmount() {
+    if (this.channel) this.sb.removeChannel(this.channel);
+    if (this.sub?.data?.subscription) this.sub.data.subscription.unsubscribe();
+  }
+
+  async loadAll(userId) {
+    if (!this.sb) return;
+    const [budget, tx, settings] = await Promise.all([
+      this.sb.from('budget').select('*').eq('user_id', userId).order('sort_order', { ascending: true }),
+      this.sb.from('monthly_data').select('category, type, description, amount, month').eq('user_id', userId),
+      this.sb.from('settings').select('net_salary').eq('user_id', userId).maybeSingle()
+    ]);
+    if (budget.error) {
+      this.setState({ saveMsg: 'The budget table is missing — run supabase/budget-table.sql in the SQL editor. (' + budget.error.message + ')' });
+    }
+    if (settings.error) {
+      this.setState({ saveMsg: 'Run supabase/budget-joint-and-salary.sql in the SQL editor to store your salary and joint flags. (' + settings.error.message + ')' });
+    } else if (!this.state.salaryDirty) {
+      this.setState({ salary: settings.data?.net_salary ?? '' });
+    }
+    // Unsaved edits win: a realtime echo of my own write must not wipe what I am typing.
+    // Merged on id, never concatenated — a dirty row that also came back from the server
+    // would otherwise appear twice under one id, and the upsert would then reject.
+    const rows = (budget.data || []).map(r => ({
+      id: r.id, bill: r.bill || '', target: r.target ?? '', category: r.category || '',
+      joint: !!r.joint, dirty: false
+    }));
+    const dirtyById = new Map(this.state.lines.filter(l => l.id && l.dirty).map(l => [l.id, l]));
+    const merged = rows.map(r => dirtyById.get(r.id) || r);
+    const brandNew = this.state.lines.filter(l => !l.id);
+    this.setState({ txRows: tx.data || [], lines: merged.concat(brandNew) });
+    if (!this.channel) this.subscribe(userId);
+  }
+
+  subscribe(userId) {
+    this.channel = this.sb.channel('budget-' + userId)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'budget', filter: 'user_id=eq.' + userId }, () => this.loadAll(userId))
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'monthly_data', filter: 'user_id=eq.' + userId }, () => this.loadAll(userId))
+      .subscribe(status => this.setState({ live: status === 'SUBSCRIBED' }));
+  }
+
+  money(n) {
+    const sym = this.props.currency || '£';
+    return sym + Number(n || 0).toLocaleString('en-GB', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  }
+
+  signed(n) {
+    const v = Number(n) || 0;
+    if (Math.abs(v) < 0.005) return this.money(0);
+    return (v > 0 ? '+' : '−') + this.money(Math.abs(v));
+  }
+
+  num(v) {
+    if (v === '' || v === null || v === undefined) return null;
+    const n = Number(String(v).replace(/[^0-9.\-]/g, ''));
+    return isNaN(n) ? null : n;
+  }
+
+  // Same internal-transfer rule as the tracker: a pot move is not spend.
+  isInternal(r) {
+    if ((r.type || '') === 'Pot transfer') return true;
+    return /\bpot\b/.test(((r.type || '') + ' ' + (r.description || '')).toLowerCase());
+  }
+
+  parseCSV(text) {
+    const lines = [];
+    let field = '', row = [], inQ = false;
+    for (let i = 0; i < text.length; i++) {
+      const c = text[i];
+      if (inQ) {
+        if (c === '"' && text[i + 1] === '"') { field += '"'; i++; }
+        else if (c === '"') inQ = false;
+        else field += c;
+      } else if (c === '"') inQ = true;
+      else if (c === ',') { row.push(field); field = ''; }
+      else if (c === '\n') { row.push(field); lines.push(row); row = []; field = ''; }
+      else if (c !== '\r') field += c;
+    }
+    if (field.length || row.length) { row.push(field); lines.push(row); }
+    return lines.filter(l => l.some(c => String(c).trim() !== ''));
+  }
+
+  // Header names vary between spreadsheets, so match loosely and fall back to position.
+  pickColumns(head) {
+    const find = (...pats) => {
+      for (const p of pats) {
+        const i = head.findIndex(h => p.test(h));
+        if (i !== -1) return i;
+      }
+      return -1;
+    };
+    const bill = find(/^bill/i, /name/i, /item/i, /descri/i, /line/i, /payee/i);
+    const target = find(/target/i, /budget/i, /amount/i, /monthly/i, /value/i, /cost/i, /^\u00a3/);
+    const category = find(/categor/i, /group/i, /type/i, /bucket/i);
+    return {
+      bill: bill === -1 ? 0 : bill,
+      target: target === -1 ? 1 : target,
+      category: category === -1 ? 2 : category
+    };
+  }
+
+  onFile = async (e) => {
+    const file = e.target.files && e.target.files[0];
+    if (!file) return;
+    const rows = this.parseCSV(await file.text());
+    e.target.value = '';
+    if (!rows.length) { this.setState({ uploadMsg: 'That file had no rows.' }); return; }
+    const head = rows[0].map(h => String(h).trim());
+    const cols = this.pickColumns(head);
+    // A first row that carries no recognisable header word is data, not a header.
+    const looksHeader = head.some(h => /bill|name|item|descri|target|budget|amount|categor|group|monthly/i.test(h));
+    const body = looksHeader ? rows.slice(1) : rows;
+    const imported = [];
+    body.forEach(r => {
+      const bill = String(r[cols.bill] || '').trim();
+      const target = this.num(r[cols.target]);
+      const category = String(r[cols.category] || '').trim();
+      if (!bill && target === null && !category) return;
+      imported.push({ id: null, bill, target: target === null ? '' : target, category, joint: false, dirty: true });
+    });
+    if (!imported.length) { this.setState({ uploadMsg: 'No usable rows found in ' + file.name + '.' }); return; }
+    const replace = this.state.importMode === 'replace';
+    this.setState(s => ({
+      lines: replace ? imported : s.lines.concat(imported),
+      removed: replace ? s.removed.concat(s.lines.filter(l => l.id).map(l => l.id)) : s.removed,
+      uploadMsg: 'Read ' + imported.length + ' line' + (imported.length === 1 ? '' : 's') + ' from ' + file.name
+        + (looksHeader ? ' (bill: “' + (head[cols.bill] || '?') + '”, target: “' + (head[cols.target] || '?') + '”, category: “' + (head[cols.category] || '?') + '”)' : ' — no header row detected, used column order')
+        + '. Review below, then save.',
+      saveMsg: '', suggestMsg: ''
+    }));
+    if (this.state.autoSuggest && imported.some(l => !l.category)) this.suggestCategories();
+  };
+
+  // Categorise bill names against the categories that actually appear in the user's
+  // statements, so a suggestion can roll up. Only ever fills blanks — a category the
+  // user typed is never overwritten.
+  suggestCategories = async () => {
+    const known = this.actuals().categories;
+    const targets = this.state.lines
+      .map((l, i) => ({ i, bill: String(l.bill).trim() }))
+      .filter(x => x.bill && !String(this.state.lines[x.i].category).trim());
+    if (!targets.length) { this.setState({ suggestMsg: 'Every line already has a category.' }); return; }
+    if (!window.claude || !window.claude.complete) {
+      this.applySuggestions(this.guessCategories(targets, known), targets.length, true);
+      return;
+    }
+    this.setState({ suggesting: true, suggestMsg: '' });
+    const list = known.length ? known.join(', ') : 'Bills, Groceries, Eating out, Transport, Entertainment, Shopping, Gym, Holidays, Subscriptions, Personal care, Savings, General';
+    const prompt = 'Assign each bill name to exactly one category from this list: ' + list
+      + '.\nBills:\n' + targets.map(t => t.i + '. ' + t.bill).join('\n')
+      + '\nReturn only a JSON object mapping each number to its category, e.g. {"0":"Bills","1":"Gym"}. '
+      + 'Use the closest category from the list; if nothing fits, use "General". No explanation.';
+    try {
+      const raw = await window.claude.complete(prompt);
+      const match = String(raw).match(/\{[\s\S]*\}/);
+      const map = match ? JSON.parse(match[0]) : {};
+      const picks = {};
+      targets.forEach(t => {
+        const v = map[t.i] ?? map[String(t.i)];
+        if (!v) return;
+        const hit = known.find(k => k.toLowerCase() === String(v).trim().toLowerCase());
+        picks[t.i] = hit || String(v).trim();
+      });
+      this.setState({ suggesting: false });
+      this.applySuggestions(picks, targets.length, false);
+    } catch (err) {
+      this.setState({ suggesting: false });
+      this.applySuggestions(this.guessCategories(targets, known), targets.length, true);
+    }
+  };
+
+  // Keyword fallback when AI is unavailable.
+  guessCategories(targets, known) {
+    const rules = [
+      [/rent|mortgage|council|water|energy|electric|gas|broadband|wifi|insur|phone|mobile|tv licen/i, 'Bills'],
+      [/netflix|spotify|disney|prime|icloud|storage|subscri|patreon|substack/i, 'Subscriptions'],
+      [/gym|class ?pass|fitness|yoga|pilates|swim|climb/i, 'Gym'],
+      [/tesco|sainsbury|aldi|lidl|asda|waitrose|ocado|grocer|food shop/i, 'Groceries'],
+      [/train|rail|tube|oyster|uber|bus|fuel|petrol|parking|car ?tax|mot/i, 'Transport'],
+      [/restaurant|pub|coffee|cafe|takeaway|deliveroo|just ?eat|lunch|dinner/i, 'Eating out'],
+      [/cinema|concert|game|theatre|entertain|night out/i, 'Entertainment'],
+      [/holiday|flight|hotel|airbnb|travel/i, 'Holidays'],
+      [/hair|barber|dental|dentist|optic|pharmacy|beauty|skincare/i, 'Personal care'],
+      [/saving|isa|pension|invest/i, 'Savings'],
+      [/amazon|clothes|clothing|shoes|shop/i, 'Shopping']
+    ];
+    const picks = {};
+    targets.forEach(t => {
+      const rule = rules.find(([re]) => re.test(t.bill));
+      const name = rule ? rule[1] : 'General';
+      const hit = known.find(k => k.toLowerCase() === name.toLowerCase());
+      picks[t.i] = hit || name;
+    });
+    return picks;
+  }
+
+  applySuggestions(picks, attempted, viaKeywords) {
+    const n = Object.keys(picks).length;
+    this.setState(s => ({
+      lines: s.lines.map((l, i) => (picks[i] ? { ...l, category: picks[i], suggested: true, dirty: true } : l)),
+      suggestMsg: n
+        ? 'Suggested ' + n + ' of ' + attempted + ' categor' + (n === 1 ? 'y' : 'ies')
+          + (viaKeywords ? ' by keyword — AI was unavailable.' : '.') + ' Marked below — correct any that are wrong, then save.'
+        : 'Could not suggest categories for those bills.'
+    }));
+  }
+
+  saveAll = async () => {
+    const { user, lines, removed } = this.state;
+    if (!user || !this.sb) return;
+    const keep = lines.filter(l => String(l.bill).trim() || this.num(l.target) !== null || String(l.category).trim());
+    this.setState({ saving: true, saveMsg: '' });
+    if (removed.length) await this.sb.from('budget').delete().in('id', removed);
+    // Inserts and updates go separately. A mixed upsert payload is normalised by PostgREST
+    // to one key set, so new rows arrive as id: null and hit the not-null constraint
+    // rather than taking the column default.
+    const row = (l, i) => ({
+      user_id: user.id, bill: String(l.bill).trim() || 'Untitled',
+      target: this.num(l.target), category: String(l.category).trim() || 'Other',
+      joint: !!l.joint, sort_order: i
+    });
+    const { error: salaryErr } = await this.sb.from('settings').upsert(
+      { user_id: user.id, net_salary: this.num(this.state.salary) }, { onConflict: 'user_id' }
+    );
+    if (salaryErr) {
+      this.setState({ saving: false, saveMsg: 'Your salary could not be saved: ' + salaryErr.message
+        + (/row-level security/i.test(salaryErr.message)
+          ? ' — the INSERT policy on public.settings is missing. Run supabase/budget-joint-and-salary.sql section 2 again.'
+          : '') + ' Budget lines were not saved either — fix this first.' });
+      return;
+    }
+    const updates = [], inserts = [];
+    keep.forEach((l, i) => (l.id ? updates.push({ id: l.id, ...row(l, i) }) : inserts.push(row(l, i))));
+    let error = null;
+    if (updates.length) ({ error } = await this.sb.from('budget').upsert(updates, { onConflict: 'id' }));
+    if (!error && inserts.length) ({ error } = await this.sb.from('budget').insert(inserts));
+    if (error) { this.setState({ saving: false, saveMsg: 'Save failed: ' + error.message }); return; }
+    this.setState({ saving: false, removed: [], lines: [], salaryDirty: false,
+      saveMsg: 'Saved ' + keep.length + ' budget line' + (keep.length === 1 ? '' : 's') + '.' });
+    this.loadAll(user.id);
+  };
+
+  addLine = () => this.setState(s => ({
+    lines: s.lines.concat([{ id: null, bill: '', target: '', category: '', joint: false, dirty: true }]), saveMsg: ''
+  }));
+
+  edit(i, key, value) {
+    this.setState(s => ({
+      lines: s.lines.map((l, j) => (j === i ? { ...l, [key]: value, dirty: true } : l)), saveMsg: ''
+    }));
+  }
+
+  submitAuth = async () => {
+    const { email, password } = this.state;
+    this.setState({ authError: '' });
+    const res = await this.sb.auth.signInWithPassword({ email, password });
+    if (res.error) this.setState({ authError: res.error.message });
+    else this.setState({ email: '', password: '' });
+  };
+
+  // Monthly actual spend per category, on the tracker's rules.
+  actuals() {
+    const splitSavings = this.props.excludeSavings !== false;
+    const splitOneOff = this.props.excludeOneOff !== false;
+    const rows = this.state.txRows.filter(r => !this.isInternal(r));
+    const byCategory = {};
+    const months = new Set();
+    rows.forEach(r => {
+      const amount = parseFloat(r.amount) || 0;
+      if (r.month) months.add(r.month);
+      const refund = amount > 0 && (r.type || '') === 'Card payment';
+      if (amount >= 0 && !refund) return;
+      const cat = r.category || 'Other';
+      if (splitSavings && /saving/i.test(cat)) return;
+      if (splitOneOff && /one ?[- ]?off/i.test(cat)) return;
+      byCategory[cat] = (byCategory[cat] || 0) + (refund ? -Math.abs(amount) : Math.abs(amount));
+    });
+    const n = months.size || 1;
+    const monthly = {};
+    Object.entries(byCategory).forEach(([k, v]) => { monthly[k] = v / n; });
+    return { monthly, months: n, categories: Object.keys(byCategory).sort() };
+  }
+
+  renderVals() {
+    const s = this.state;
+    const a = this.actuals();
+    const norm = x => String(x || '').trim().toLowerCase();
+
+    const lines = s.lines.map((l, i) => {
+      const cat = norm(l.category);
+      const known = cat ? a.categories.some(c => norm(c) === cat) : null;
+      return {
+        bill: l.bill, target: l.target, category: l.category,
+        matchLabel: !cat ? 'No category — will not roll up'
+          : l.suggested ? (known ? 'Suggested · matches your statements' : 'Suggested · not in your statements')
+          : known ? 'Matches your statements' : 'Not seen in your statements yet',
+        matchColor: !cat ? 'var(--color-accent-300)'
+          : l.suggested ? 'var(--color-accent)'
+          : known ? 'var(--color-neutral-400)' : 'var(--color-accent-300)',
+        // Every category the user could plausibly want: those in their statements, those
+        // already used elsewhere in the budget, and whatever this row currently holds.
+        catOptions: [...new Set(
+          a.categories
+            .concat(s.lines.map(x => String(x.category).trim()).filter(Boolean))
+            .concat(String(l.category).trim() ? [String(l.category).trim()] : [])
+        )].sort().map(c => ({ name: c, selected: norm(c) === cat })),
+        custom: !!l.custom,
+        picking: !l.custom,
+        pickCategory: e => {
+          const v = e.target.value;
+          if (v === '__new__') {
+            this.setState(st => ({ lines: st.lines.map((x, j) => (j === i ? { ...x, custom: true, category: '', suggested: false, dirty: true } : x)), saveMsg: '' }));
+            return;
+          }
+          this.setState(st => ({ lines: st.lines.map((x, j) => (j === i ? { ...x, category: v, suggested: false, dirty: true } : x)), saveMsg: '' }));
+        },
+        doneCustom: () => this.setState(st => ({ lines: st.lines.map((x, j) => (j === i ? { ...x, custom: false } : x)) })),
+        joint: !!l.joint,
+        setJoint: e => this.setState(st => ({
+          lines: st.lines.map((x, j) => (j === i ? { ...x, joint: e.target.checked, dirty: true } : x)),
+          saveMsg: ''
+        })),
+        rowStyle: l.suggested
+          ? { width: '100%', borderColor: 'var(--color-accent)' }
+          : { width: '100%' },
+        setBill: e => this.edit(i, 'bill', e.target.value),
+        setTarget: e => this.edit(i, 'target', e.target.value),
+        // Typing over a suggestion makes it the user's own again.
+        setCategory: e => this.setState(st => ({
+          lines: st.lines.map((x, j) => (j === i ? { ...x, category: e.target.value, suggested: false, dirty: true } : x)),
+          saveMsg: ''
+        })),
+        remove: () => this.setState(st => ({
+          lines: st.lines.filter((_, j) => j !== i),
+          removed: l.id ? st.removed.concat([l.id]) : st.removed,
+          saveMsg: ''
+        }))
+      };
+    });
+
+    const budgetByCategory = {};
+    let budgetSum = 0, blankCount = 0, jointSum = 0, jointCount = 0;
+    s.lines.forEach(l => {
+      const t = this.num(l.target);
+      if (t === null) { blankCount++; return; }
+      budgetSum += t;
+      if (l.joint) { jointSum += t; jointCount++; }
+      const cat = String(l.category).trim() || 'Other';
+      budgetByCategory[cat] = (budgetByCategory[cat] || 0) + t;
+    });
+    const salaryNum = this.num(s.salary);
+    const spare = salaryNum === null ? null : salaryNum - budgetSum;
+
+    const usedCategories = [...new Set(s.lines.map(l => String(l.category).trim()).filter(Boolean))];
+    const unmatched = usedCategories.filter(c => !a.categories.some(x => norm(x) === norm(c)));
+
+    const names = [...new Set(Object.keys(budgetByCategory).concat(a.categories))].sort();
+    const compareRows = names.map(name => {
+      const budget = budgetByCategory[name] || 0;
+      const actual = a.monthly[name] || 0;
+      const diff = budget - actual;
+      const over = diff < -0.005;
+      // A row with no budget has nothing to consume, so it gets an empty track.
+      const pct = budget > 0 ? Math.min(100, (actual / budget) * 100) : 0;
+      const memberBills = s.lines.filter(l => norm(l.category) === norm(name) && this.num(l.target) !== null);
+      return {
+        name,
+        detail: memberBills.length
+          ? memberBills.slice(0, 3).map(l => l.bill || 'Untitled').join(' · ')
+            + (memberBills.length > 3 ? ' +' + (memberBills.length - 3) : '')
+          : budget === 0 ? 'No budget line' : '',
+        budget: budget ? this.money(budget) : '—',
+        actual: actual ? this.money(actual) : '—',
+        diff: budget === 0 && actual === 0 ? '—' : this.signed(diff),
+        diffColor: budget === 0 ? 'var(--color-neutral-400)' : over ? 'var(--color-over)' : 'var(--color-under)',
+        barStyle: {
+          width: pct + '%', height: '100%', borderRadius: '3px',
+          background: over ? 'var(--color-over)' : 'var(--color-under)'
+        }
+      };
+    }).filter(r => r.budget !== '—' || r.actual !== '—');
+
+    const actualSum = Object.values(a.monthly).reduce((t, v) => t + v, 0);
+    const diff = budgetSum - actualSum;
+
+    return {
+      showAuth: s.ready && !s.user,
+      showApp: !!s.user,
+      userEmail: s.user?.email || '',
+      liveLabel: s.live ? 'Live' : '',
+      email: s.email, password: s.password, authError: s.authError,
+      onEmail: e => this.setState({ email: e.target.value }),
+      onPassword: e => this.setState({ password: e.target.value }),
+      submitAuth: this.submitAuth,
+
+      isSetup: s.tab === 'setup', isCompare: s.tab === 'compare',
+      setupTabClass: s.tab === 'setup' ? 'btn-primary' : 'btn-secondary',
+      compareTabClass: s.tab === 'compare' ? 'btn-primary' : 'btn-secondary',
+      goSetup: () => this.setState({ tab: 'setup' }),
+      goCompare: () => this.setState({ tab: 'compare' }),
+
+      lines, hasLines: s.lines.length > 0, noLines: s.lines.length === 0,
+      knownCategories: a.categories.map(c => ({ name: c })),
+      addLine: this.addLine, saveAll: this.saveAll,
+      saveLabel: s.saving ? 'Saving…' : 'Save budget',
+      suggestCategories: this.suggestCategories,
+      suggestLabel: s.suggesting ? 'Thinking…' : 'Suggest categories',
+      suggestMsg: s.suggestMsg,
+      blanksToFill: s.lines.some(l => String(l.bill).trim() && !String(l.category).trim()),
+      autoSuggest: s.autoSuggest,
+      onAutoSuggest: e => this.setState({ autoSuggest: e.target.checked }),
+      saveMsg: s.saveMsg, uploadMsg: s.uploadMsg,
+      importMode: s.importMode,
+      onImportMode: e => this.setState({ importMode: e.target.value }),
+      onFile: this.onFile,
+
+      salary: s.salary,
+      onSalary: e => this.setState({ salary: e.target.value, salaryDirty: true, saveMsg: '' }),
+      spareMoney: spare === null ? '—' : this.signed(spare),
+      spareStyle: { fontFamily: 'var(--font-heading)', fontSize: 'clamp(22px, 2.6vw, 34px)', lineHeight: 1, whiteSpace: 'nowrap',
+        color: spare === null ? 'var(--color-neutral-400)' : spare < 0 ? 'var(--color-over)' : 'var(--color-under)' },
+      spareLabel: spare === null ? 'Enter your salary to see this'
+        : spare < 0 ? 'short each month' : 'left after every budget line',
+      jointTotal: jointSum ? this.money(jointSum) : '—',
+      jointLabel: jointCount
+        ? jointCount + (jointCount === 1 ? ' line marked joint' : ' lines marked joint')
+        : 'Tick Joint on shared bills',
+
+      budgetTotal: budgetSum ? this.money(budgetSum) : '—',
+      lineCountLabel: s.lines.length + (s.lines.length === 1 ? ' line' : ' lines') + ' a month',
+      categoryCount: String(usedCategories.length),
+      unmatchedLabel: unmatched.length
+        ? unmatched.length + ' not in your statements'
+        : usedCategories.length ? 'All tie to statements' : '',
+      blankCount: String(blankCount),
+
+      actualBasisLabel: 'Actual is your average monthly spend per category across '
+        + a.months + (a.months === 1 ? ' month' : ' months')
+        + ' of imported statements, on the same rules as the tracker: pot transfers excluded, refunds netted off'
+        + (this.props.excludeSavings === false ? ', savings counted as spend' : ', savings counted separately')
+        + (this.props.excludeOneOff === false ? ', one-off payments counted as spend.' : ', one-off payments counted separately.'),
+      actualTotal: actualSum ? this.money(actualSum) : '—',
+      monthCountLabel: 'average over ' + a.months + (a.months === 1 ? ' month' : ' months'),
+      diffTotal: this.signed(diff),
+      diffColor: diff < 0 ? 'var(--color-over)' : 'var(--color-under)',
+      diffLabel: diff < 0 ? 'over budget a month' : 'under budget a month',
+      compareRows, hasCompare: compareRows.length > 0, noCompare: compareRows.length === 0
+    };
+  }
+}
+</script>
+</body>
+</html>

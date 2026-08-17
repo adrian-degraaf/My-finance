@@ -1,0 +1,1296 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="_ds/nocturne-93999d3a-d76b-46f8-9e35-9b45ced0adde/styles.css">
+<script src="_ds/nocturne-93999d3a-d76b-46f8-9e35-9b45ced0adde/_ds_bundle.js"></script>
+<script src="config.js" onerror="void 0"></script>
+<style>
+  html, body { margin: 0; background: var(--color-bg); color: var(--color-text); }
+  input[type="file"]::file-selector-button {
+    font: inherit; font-size: 14px; color: var(--color-text);
+    background: transparent; border: 1px solid var(--color-accent);
+    border-radius: var(--radius-md); padding: 5px 12px; margin-right: 10px; cursor: pointer;
+  }
+  a { color: var(--color-accent); }
+  a:hover { color: var(--color-accent-300); }
+  /* On/off target. Held at the accent's chroma and lightness so they read as
+     the same family, not as traffic lights bolted onto the palette. */
+  :root { --color-under: oklch(0.74 0.11 152); --color-over: oklch(0.68 0.15 24); }
+</style>
+</helmet>
+
+<div style="min-height: 100vh; background: var(--color-bg); color: var(--color-text); font-family: var(--font-body);">
+
+  <sc-if value="{{ showAuth }}" hint-placeholder-val="{{ false }}">
+    <div style="display: grid; place-items: center; min-height: 100vh; padding: 24px;">
+      <div class="card elev-md" style="width: min(400px, 100%); padding: 28px; gap: 14px;">
+        <div class="card-kicker">Personal finance</div>
+        <h2 style="font-size: 26px; margin: 0;">Financial Tracker</h2>
+        <p style="font-size: 13px; opacity: 0.6; margin: 0 0 6px;">Budget analysis, savings goals and spending insights.</p>
+        <div class="field">
+          <label for="email">Email</label>
+          <input id="email" class="input" type="email" value="{{ email }}" onChange="{{ onEmail }}" placeholder="you@example.com">
+        </div>
+        <div class="field">
+          <label for="password">Password</label>
+          <input id="password" class="input" type="password" value="{{ password }}" onChange="{{ onPassword }}" placeholder="••••••••">
+        </div>
+        <sc-if value="{{ authError }}" hint-placeholder-val="{{ false }}">
+          <div style="font-size: 12px; color: var(--color-accent-300); background: var(--color-accent-900); border-radius: var(--radius-sm); padding: 8px 10px;">{{ authError }}</div>
+        </sc-if>
+        <button class="btn btn-primary btn-block" onClick="{{ submitAuth }}">{{ authActionLabel }}</button>
+        <button class="btn btn-ghost" style="align-self: flex-start;" onClick="{{ toggleAuthMode }}">{{ authToggleLabel }}</button>
+      </div>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{ showApp }}" hint-placeholder-val="{{ true }}">
+    <div style="max-width: 1080px; margin: 0 auto; padding: 0 24px 64px;">
+
+      <div class="nav" style="padding: 20px 0 8px;">
+        <div class="nav-brand">Financial Tracker</div>
+        <span style="font-size: 12px; opacity: 0.55;">{{ userEmail }}</span>
+        <span style="font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--color-accent);">{{ liveLabel }}</span>
+        <button class="btn btn-secondary" onClick="{{ signOut }}">Sign out</button>
+      </div>
+
+      <div style="display: flex; gap: 4px; margin: 12px 0 24px;">
+        <button class="btn {{ budgetTabClass }}" onClick="{{ goBudget }}">Budget</button>
+        <button class="btn {{ goalsTabClass }}" onClick="{{ goGoals }}">Goals</button>
+        <button class="btn {{ insightsTabClass }}" onClick="{{ goInsights }}">Insights</button>
+        <a href="Budget Setup.dc.html" class="btn btn-secondary" style="margin-left: auto; text-decoration: none;">Budget setup</a>
+      </div>
+
+      <sc-if value="{{ isDrill }}" hint-placeholder-val="{{ false }}">
+        <div style="display: flex; flex-direction: column; gap: 24px;">
+          <div style="display: flex; align-items: center; gap: 14px;">
+            <button class="btn btn-secondary" onClick="{{ closeDrill }}">Back to budget</button>
+            <span style="font-size: 12px; opacity: 0.5;">{{ drillMembersLabel }}</span>
+          </div>
+
+          <div>
+            <div class="card-kicker">{{ drillKicker }}</div>
+            <h2 style="font-size: 32px; margin: 4px 0 0;">{{ drillName }}</h2>
+          </div>
+
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 12px;">
+            <div class="card" style="padding: 16px 18px; gap: 6px;">
+              <div class="card-kicker">Total</div>
+              <div style="font-family: var(--font-heading); font-size: clamp(20px, 2.1vw, 28px); line-height: 1; white-space: nowrap;">{{ drillTotal }}</div>
+            </div>
+            <div class="card" style="padding: 16px 18px; gap: 6px;">
+              <div class="card-kicker">Monthly average</div>
+              <div style="font-family: var(--font-heading); font-size: clamp(20px, 2.1vw, 28px); line-height: 1; white-space: nowrap;">{{ drillMonthly }}</div>
+            </div>
+            <div class="card" style="padding: 16px 18px; gap: 6px;">
+              <div class="card-kicker">Transactions</div>
+              <div style="font-family: var(--font-heading); font-size: clamp(20px, 2.1vw, 28px); line-height: 1; white-space: nowrap;">{{ drillCount }}</div>
+            </div>
+            <div class="card" style="padding: 16px 18px; gap: 6px;">
+              <div class="card-kicker">Largest single</div>
+              <div style="font-family: var(--font-heading); font-size: clamp(20px, 2.1vw, 28px); line-height: 1; white-space: nowrap;">{{ drillMax }}</div>
+              <div style="font-size: 11px; opacity: 0.5;">{{ drillMaxWhat }}</div>
+            </div>
+          </div>
+
+          <div class="card" style="padding: 18px; gap: 12px;">
+            <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
+              <div class="card-title" style="margin-right: auto;">By month</div>
+            </div>
+            <div style="display: flex; flex-wrap: wrap; gap: 6px;">
+              <sc-for list="{{ drillMonthChips }}" as="chip" hint-placeholder-count="6">
+                <button class="btn {{ chip.cls }}" onClick="{{ chip.pick }}">{{ chip.label }}</button>
+              </sc-for>
+            </div>
+          </div>
+
+          <div class="card" style="padding: 18px; gap: 12px;">
+            <div class="card-title">Transactions</div>
+            <table class="table">
+              <thead>
+                <tr>
+                  <th style="width: 96px;">Date</th>
+                  <th>Description</th>
+                  <th>Category</th>
+                  <th>Type</th>
+                  <th style="text-align: right;">Amount</th>
+                </tr>
+              </thead>
+              <tbody>
+                <sc-for list="{{ drillRows }}" as="t" hint-placeholder-count="8">
+                  <tr>
+                    <td style="font-variant-numeric: tabular-nums; opacity: 0.7;">{{ t.date }}</td>
+                    <td>{{ t.description }}</td>
+                    <td style="opacity: 0.7;">{{ t.category }}</td>
+                    <td><span class="tag tag-neutral">{{ t.type }}</span></td>
+                    <td style="text-align: right; font-variant-numeric: tabular-nums;">{{ t.amount }}</td>
+                  </tr>
+                </sc-for>
+              </tbody>
+            </table>
+            <sc-if value="{{ drillEmpty }}" hint-placeholder-val="{{ false }}">
+              <p style="font-size: 13px; opacity: 0.5; margin: 8px 0 0;">No transactions in this period.</p>
+            </sc-if>
+          </div>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ isBudget }}" hint-placeholder-val="{{ true }}">
+        <div style="display: flex; flex-direction: column; gap: 24px;">
+
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 12px;">
+            <div class="card" style="padding: 16px 18px; gap: 6px; text-align: left; cursor: pointer; border: 1px solid transparent;" style-hover="{ borderColor: 'var(--color-accent)' }" role="button" onClick="{{ openAllSpend }}">
+              <div style="display: flex; align-items: center; gap: 6px;">
+                <div class="card-kicker">Total spend</div>
+                <span title="Real consumption only. Pot deposits and pot withdrawals are internal moves between your own accounts and are excluded in both directions, so money is counted once — when it leaves for a merchant. Card refunds net off their category. Savings are shown separately." style="font-size: 11px; opacity: 0.45; cursor: help;">ⓘ</span>
+              </div>
+              <div style="font-family: var(--font-heading); font-size: clamp(20px, 2.2vw, 30px); line-height: 1; white-space: nowrap;">{{ totalSpend }}</div>
+              <div style="font-size: 11px; opacity: 0.5;">{{ monthCountLabel }}</div>
+              <div style="display: grid; gap: 2px; font-size: 11px; opacity: 0.45;">
+                <div>{{ transferExcludedLabel }}</div>
+                <div>{{ refundLabel }}</div>
+                <div>{{ savingsOutLabel }}</div>
+                <div>{{ oneOffOutLabel }}</div>
+              </div>
+              <div style="font-size: 11px; color: var(--color-accent-300);">See every transaction →</div>
+            </div>
+            <div class="card" style="padding: 16px 18px; gap: 6px;">
+              <div class="card-kicker">Monthly average</div>
+              <div style="font-family: var(--font-heading); font-size: clamp(20px, 2.2vw, 30px); line-height: 1; white-space: nowrap;">{{ monthlyAvg }}</div>
+              <div style="font-size: 11px; opacity: 0.5;">{{ targetLabel }}</div>
+            </div>
+            <div class="card" style="padding: 16px 18px; gap: 6px;">
+              <div class="card-kicker">{{ varianceKicker }}</div>
+              <div style="{{ varianceStyle }}">{{ variance }}</div>
+              <div style="font-size: 11px; opacity: 0.5;">{{ variancePct }}</div>
+            </div>
+            <div class="card" style="padding: 16px 18px; gap: 6px; text-align: left; cursor: pointer; border: 1px solid transparent;" style-hover="{ borderColor: 'var(--color-accent)' }" role="button" tabindex="0" onClick="{{ openSalary }}">
+              <div class="card-kicker">{{ salaryLabel }}</div>
+              <div style="font-family: var(--font-heading); font-size: clamp(20px, 2.2vw, 30px); line-height: 1; white-space: nowrap;">{{ monthlySalary }}</div>
+              <div style="font-size: 11px; opacity: 0.5;">{{ totalSalaryLabel }}</div>
+            </div>
+            <div class="card" style="padding: 16px 18px; gap: 6px; text-align: left; cursor: pointer; border: 1px solid transparent;" style-hover="{ borderColor: 'var(--color-accent)' }" role="button" tabindex="0" onClick="{{ openOther }}">
+              <div style="display: flex; align-items: center; gap: 6px;">
+                <div class="card-kicker">Other income</div>
+                <span title="Pot withdrawals are excluded. Money moved out of a pot to cover main-card spending is your own money coming back, not new income — counting it would double-count the original salary." style="display: inline-grid; place-items: center; width: 14px; height: 14px; border-radius: 50%; border: 1px solid var(--color-accent); color: var(--color-accent); font-size: 9px; line-height: 1; cursor: help;">?</span>
+              </div>
+              <div style="font-family: var(--font-heading); font-size: clamp(20px, 2.2vw, 30px); line-height: 1; white-space: nowrap;">{{ monthlyOther }}</div>
+              <div style="font-size: 11px; opacity: 0.5;">{{ totalOtherLabel }}</div>
+              <div style="font-size: 11px; opacity: 0.45;">{{ potExcludedLabel }}</div>
+            </div>
+          </div>
+
+          <div class="card" style="padding: 18px; gap: 12px;">
+            <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
+              <div class="card-title" style="margin-right: auto;">Spending by category</div>
+              <sc-if value="{{ canCombine }}" hint-placeholder-val="{{ false }}">
+                <input class="input" style="width: 200px;" type="text" value="{{ groupName }}" onChange="{{ onGroupName }}" placeholder="Combined row name">
+                <button class="btn btn-primary" onClick="{{ combineSelected }}">{{ combineLabel }}</button>
+              </sc-if>
+            </div>
+            <div style="display: flex; align-items: center; gap: 6px; flex-wrap: wrap;">
+              <sc-for list="{{ catMonthChips }}" as="chip" hint-placeholder-count="5">
+                <button class="btn {{ chip.cls }}" onClick="{{ chip.pick }}">{{ chip.label }}</button>
+              </sc-for>
+            </div>
+            <table class="table">
+              <thead>
+                <tr>
+                  <th style="width: 28px;"></th>
+                  <th>Category</th>
+                  <th style="text-align: right;">{{ catAllTimeHeader }}</th>
+                  <th style="text-align: right;">{{ catMonthlyHeader }}</th>
+                  <th style="text-align: right;">Target</th>
+                  <th style="text-align: right;">Status</th>
+                </tr>
+              </thead>
+              <tbody>
+                <sc-for list="{{ categoryRows }}" as="row" hint-placeholder-count="5">
+                  <tr>
+                    <td><input type="checkbox" checked="{{ row.checked }}" onChange="{{ row.select }}" style="accent-color: var(--color-accent); cursor: pointer;"></td>
+                    <td>
+                      <button class="btn btn-ghost" style="padding: 0; font-size: 15px; color: var(--color-text);" style-hover="{ color: 'var(--color-accent)' }" onClick="{{ row.open }}">{{ row.name }}</button>
+                      <sc-if value="{{ row.isGroup }}" hint-placeholder-val="{{ false }}">
+                        <span style="display: inline-flex; align-items: center; gap: 8px; margin-left: 10px;">
+                          <span class="tag tag-outline">{{ row.memberLabel }}</span>
+                          <button class="btn btn-ghost" onClick="{{ row.ungroup }}">Split</button>
+                        </span>
+                      </sc-if>
+                    </td>
+                    <td style="text-align: right; font-variant-numeric: tabular-nums;">{{ row.total }}</td>
+                    <td style="text-align: right; font-variant-numeric: tabular-nums;">{{ row.monthly }}</td>
+                    <td style="text-align: right; font-variant-numeric: tabular-nums; opacity: 0.75;">{{ row.target }}</td>
+                    <td style="text-align: right;">
+                      <span style="{{ row.statusStyle }}">{{ row.status }}</span>
+                      <div style="font-size: 11px; margin-top: 3px; font-variant-numeric: tabular-nums; color: {{ row.varianceColor }};">{{ row.varianceLabel }}</div>
+                    </td>
+                  </tr>
+                </sc-for>
+              </tbody>
+            </table>
+            <sc-if value="{{ noData }}" hint-placeholder-val="{{ false }}">
+              <p style="font-size: 13px; opacity: 0.5; margin: 8px 0 0;">No transactions yet. Import a Monzo CSV below.</p>
+            </sc-if>
+          </div>
+
+          <div class="card" style="padding: 18px; gap: 16px;">
+            <div class="card-title">Monthly trend</div>
+            <div style="display: flex; align-items: flex-end; gap: 10px; height: 180px;">
+              <sc-for list="{{ monthBars }}" as="bar" hint-placeholder-count="8">
+                <div style="flex: 1; display: flex; flex-direction: column; justify-content: flex-end; align-items: center; gap: 8px; height: 100%;">
+                  <div style="font-size: 11px; opacity: 0.55; font-variant-numeric: tabular-nums;">{{ bar.value }}</div>
+                  <div style="{{ bar.style }}"></div>
+                  <div style="font-size: 11px; opacity: 0.5;">{{ bar.label }}</div>
+                </div>
+              </sc-for>
+            </div>
+          </div>
+
+          <div class="card" style="padding: 18px; gap: 12px;">
+            <div class="card-title">Filter by transaction type</div>
+            <div style="display: flex; flex-wrap: wrap; gap: 6px;">
+              <sc-for list="{{ typeChips }}" as="chip" hint-placeholder-count="4">
+                <button class="btn {{ chip.cls }}" onClick="{{ chip.toggle }}">{{ chip.label }}</button>
+              </sc-for>
+            </div>
+            <p style="font-size: 11px; opacity: 0.45; margin: 0;">Deselected types are excluded from every figure above.</p>
+          </div>
+
+          <div class="card" style="padding: 18px; gap: 14px;">
+            <div class="card-title">Import transactions</div>
+            <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 12px;">
+              <select class="input" style="width: auto;" value="{{ accountType }}" onChange="{{ onAccountType }}">
+                <option value="main">Main bank account</option>
+                <option value="pot">Pot account</option>
+              </select>
+              <input type="file" accept=".csv" onChange="{{ onFile }}" style="font-size: 13px;">
+            </div>
+            <sc-if value="{{ uploadMsg }}" hint-placeholder-val="{{ false }}">
+              <div style="font-size: 12px; opacity: 0.75;">{{ uploadMsg }}</div>
+            </sc-if>
+            <div style="display: flex; flex-direction: column; gap: 2px; margin-top: 4px;">
+              <sc-for list="{{ sources }}" as="src" hint-placeholder-count="2">
+                <div style="display: flex; align-items: center; gap: 12px; padding: 8px 0; border-bottom: 1px solid var(--color-divider);">
+                  <span style="font-size: 13px; flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">{{ src.name }}</span>
+                  <span class="tag tag-neutral">{{ src.kind }}</span>
+                  <span style="font-size: 12px; opacity: 0.5; font-variant-numeric: tabular-nums;">{{ src.count }}</span>
+                  <span style="font-size: 12px; opacity: 0.4;">{{ src.when }}</span>
+                  <button class="btn btn-ghost" onClick="{{ src.remove }}">Delete</button>
+                </div>
+              </sc-for>
+            </div>
+          </div>
+
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ isGoals }}" hint-placeholder-val="{{ false }}">
+        <div style="display: flex; flex-direction: column; gap: 24px;">
+          <div style="display: grid; grid-template-columns: minmax(220px, 260px) 1fr; gap: 20px; align-items: start;">
+
+            <div class="card" style="padding: 16px; gap: 10px;">
+              <div style="display: flex; align-items: center; gap: 10px;">
+                <div class="card-title" style="margin-right: auto;">Your goals</div>
+                <button class="btn btn-ghost" onClick="{{ newGoal }}">New</button>
+              </div>
+              <div style="display: flex; flex-direction: column; gap: 6px;">
+                <sc-for list="{{ goalList }}" as="g" hint-placeholder-count="3">
+                  <button style="{{ g.style }}" onClick="{{ g.pick }}">
+                    <span style="font-size: 14px;">{{ g.name }}</span>
+                    <span style="font-size: 11px; opacity: 0.55; font-variant-numeric: tabular-nums;">{{ g.line }}</span>
+                    <span style="height: 4px; border-radius: 2px; background: var(--color-neutral-800); overflow: hidden; margin-top: 4px;">
+                      <span style="{{ g.barStyle }}"></span>
+                    </span>
+                  </button>
+                </sc-for>
+              </div>
+              <sc-if value="{{ noGoals }}" hint-placeholder-val="{{ false }}">
+                <p style="font-size: 12px; opacity: 0.5; margin: 4px 0 0;">No goals yet. Fill in the form and save.</p>
+              </sc-if>
+            </div>
+
+            <div class="card" style="padding: 18px; gap: 14px;">
+              <div style="display: flex; align-items: baseline; gap: 10px;">
+                <div class="card-title" style="margin-right: auto;">{{ editorTitle }}</div>
+                <span style="font-size: 11px; opacity: 0.45;">Every field is optional</span>
+              </div>
+
+              <div class="field">
+                <label for="gname">Goal name</label>
+                <input id="gname" class="input" type="text" value="{{ dName }}" onChange="{{ onDName }}" placeholder="House deposit">
+              </div>
+
+              <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px;">
+                <div class="field">
+                  <label for="gamt">Target amount</label>
+                  <input id="gamt" class="input" type="number" value="{{ dTarget }}" onChange="{{ onDTarget }}" placeholder="40000">
+                </div>
+                <div class="field">
+                  <label for="gcur">Saved so far</label>
+                  <input id="gcur" class="input" type="number" value="{{ dCurrent }}" onChange="{{ onDCurrent }}" placeholder="15000">
+                </div>
+                <div class="field">
+                  <label for="gmon">Monthly contribution</label>
+                  <input id="gmon" class="input" type="number" value="{{ dMonthly }}" onChange="{{ onDMonthly }}" placeholder="1000">
+                </div>
+              </div>
+
+              <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px;">
+                <div class="field">
+                  <label for="gtype">Where it is held</label>
+                  <select id="gtype" class="input" value="{{ dType }}" onChange="{{ onDType }}">
+                    <sc-for list="{{ sectorOptions }}" as="o" hint-placeholder-count="6">
+                      <option value="{{ o.value }}">{{ o.label }}</option>
+                    </sc-for>
+                  </select>
+                </div>
+                <div class="field">
+                  <label for="grate">Assumed growth % a year</label>
+                  <input id="grate" class="input" type="number" step="0.1" value="{{ dRate }}" onChange="{{ onDRate }}" placeholder="{{ ratePlaceholder }}">
+                </div>
+                <div class="field">
+                  <label for="gdate">Target date</label>
+                  <input id="gdate" class="input" type="month" value="{{ dDate }}" onChange="{{ onDDate }}">
+                </div>
+              </div>
+
+              <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
+                <button class="btn btn-primary" onClick="{{ saveGoal }}">{{ saveGoalLabel }}</button>
+                <sc-if value="{{ canDelete }}" hint-placeholder-val="{{ false }}">
+                  <button class="btn btn-secondary" onClick="{{ deleteGoal }}">Delete</button>
+                </sc-if>
+                <sc-if value="{{ goalMsg }}" hint-placeholder-val="{{ false }}">
+                  <span style="font-size: 12px; opacity: 0.7;">{{ goalMsg }}</span>
+                </sc-if>
+              </div>
+            </div>
+          </div>
+
+          <div class="card" style="padding: 18px; gap: 16px;">
+            <div style="display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap;">
+              <div class="card-title" style="margin-right: auto;">Progress</div>
+              <span style="font-size: 11px; opacity: 0.45;">{{ goalScopeLabel }}</span>
+            </div>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 16px;">
+              <div style="display: flex; flex-direction: column; gap: 6px;">
+                <div class="card-kicker">Saved</div>
+                <div style="font-family: var(--font-heading); font-size: clamp(20px, 2.1vw, 28px); line-height: 1; white-space: nowrap;">{{ goalSaved }}</div>
+                <div style="font-size: 11px; opacity: 0.5;">{{ goalTargetLabel }}</div>
+              </div>
+              <div style="display: flex; flex-direction: column; gap: 6px;">
+                <div class="card-kicker">Remaining</div>
+                <div style="font-family: var(--font-heading); font-size: clamp(20px, 2.1vw, 28px); line-height: 1; white-space: nowrap;">{{ goalRemaining }}</div>
+              </div>
+              <div style="display: flex; flex-direction: column; gap: 6px;">
+                <div class="card-kicker">Complete</div>
+                <div style="font-family: var(--font-heading); font-size: clamp(20px, 2.1vw, 28px); line-height: 1; white-space: nowrap;">{{ goalPct }}</div>
+              </div>
+              <div style="display: flex; flex-direction: column; gap: 6px;">
+                <div class="card-kicker">Contributing</div>
+                <div style="font-family: var(--font-heading); font-size: clamp(20px, 2.1vw, 28px); line-height: 1; white-space: nowrap;">{{ goalMonthlyLabel }}</div>
+                <div style="font-size: 11px; opacity: 0.5;">{{ goalHeldLabel }}</div>
+              </div>
+            </div>
+            <div style="height: 6px; border-radius: 3px; background: var(--color-neutral-800); overflow: hidden;">
+              <div style="{{ progressStyle }}"></div>
+            </div>
+            <p style="font-size: 13px; opacity: 0.65; margin: 0; text-wrap: pretty;">{{ goalNote }}</p>
+          </div>
+
+          <div class="card" style="padding: 18px; gap: 16px;">
+            <div style="display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap;">
+              <div class="card-title" style="margin-right: auto;">Forecast</div>
+              <span style="font-size: 11px; opacity: 0.45;">{{ goalScopeLabel }} · {{ forecastAssumption }}</span>
+            </div>
+
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 16px;">
+              <div style="display: flex; flex-direction: column; gap: 6px;">
+                <div class="card-kicker">Target reached</div>
+                <div style="font-family: var(--font-heading); font-size: clamp(20px, 2.1vw, 28px); line-height: 1; white-space: nowrap;">{{ reachedDate }}</div>
+                <div style="font-size: 11px; opacity: 0.5;">{{ reachedMonths }}</div>
+              </div>
+              <div style="display: flex; flex-direction: column; gap: 6px;">
+                <div class="card-kicker">Growth earned by then</div>
+                <div style="font-family: var(--font-heading); font-size: clamp(20px, 2.1vw, 28px); line-height: 1; white-space: nowrap;">{{ growthEarned }}</div>
+                <div style="font-size: 11px; opacity: 0.5;">{{ growthVsFlat }}</div>
+              </div>
+              <div style="display: flex; flex-direction: column; gap: 6px;">
+                <div class="card-kicker">To hit target date</div>
+                <div style="font-family: var(--font-heading); font-size: clamp(20px, 2.1vw, 28px); line-height: 1; white-space: nowrap;">{{ neededMonthly }}</div>
+                <div style="font-size: 11px; opacity: 0.5;">{{ neededMonthlyNote }}</div>
+              </div>
+            </div>
+
+            <table class="table">
+              <thead>
+                <tr>
+                  <th>Year</th>
+                  <th style="text-align: right;">Paid in</th>
+                  <th style="text-align: right;">Growth</th>
+                  <th style="text-align: right;">Balance</th>
+                  <th style="text-align: right;">Of target</th>
+                </tr>
+              </thead>
+              <tbody>
+                <sc-for list="{{ forecastRows }}" as="y" hint-placeholder-count="5">
+                  <tr>
+                    <td>{{ y.year }}</td>
+                    <td style="text-align: right; font-variant-numeric: tabular-nums;">{{ y.paid }}</td>
+                    <td style="text-align: right; font-variant-numeric: tabular-nums;">{{ y.growth }}</td>
+                    <td style="text-align: right; font-variant-numeric: tabular-nums;">{{ y.balance }}</td>
+                    <td style="text-align: right; font-variant-numeric: tabular-nums; opacity: 0.6;">{{ y.pct }}</td>
+                  </tr>
+                </sc-for>
+              </tbody>
+            </table>
+            <sc-if value="{{ forecastEmpty }}" hint-placeholder-val="{{ true }}">
+              <p style="font-size: 13px; opacity: 0.5; margin: 0;">{{ forecastEmptyNote }}</p>
+            </sc-if>
+          </div>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ isInsights }}" hint-placeholder-val="{{ false }}">
+        <div style="display: flex; flex-direction: column; gap: 24px;">
+          <div class="card" style="padding: 18px; gap: 10px;">
+            <div class="card-title">What the numbers say</div>
+            <sc-for list="{{ insightLines }}" as="line" hint-placeholder-count="4">
+              <p style="font-size: 14px; line-height: 1.7; margin: 0; opacity: 0.85; text-wrap: pretty;">{{ line.text }}</p>
+            </sc-for>
+          </div>
+
+          <div class="card" style="padding: 18px; gap: 14px;">
+            <div class="card-kicker">Advice</div>
+            <div class="card-title">AI review of your spending</div>
+            <p style="font-size: 13px; opacity: 0.55; margin: 0;">Sends your category totals and budget target for analysis. No transaction descriptions leave the page.</p>
+            <button class="btn btn-primary" style="align-self: flex-start;" onClick="{{ runAi }}">{{ aiButtonLabel }}</button>
+            <sc-if value="{{ aiText }}" hint-placeholder-val="{{ false }}">
+              <div style="font-size: 14px; line-height: 1.75; white-space: pre-wrap; border-left: 2px solid var(--color-accent); padding-left: 14px; opacity: 0.9;">{{ aiText }}</div>
+            </sc-if>
+          </div>
+        </div>
+      </sc-if>
+
+    </div>
+  </sc-if>
+</div>
+
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;monthlyTarget&quot;:{&quot;editor&quot;:&quot;int&quot;,&quot;default&quot;:650,&quot;tsType&quot;:&quot;number&quot;,&quot;min&quot;:100,&quot;max&quot;:5000,&quot;step&quot;:50,&quot;unit&quot;:&quot;£&quot;,&quot;section&quot;:&quot;Budget&quot;},&quot;excludeSavings&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;Budget&quot;},&quot;excludeOneOff&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;Budget&quot;},&quot;currency&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;default&quot;:&quot;£&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;options&quot;:[&quot;£&quot;,&quot;$&quot;,&quot;€&quot;],&quot;section&quot;:&quot;Budget&quot;},&quot;salaryMatch&quot;:{&quot;editor&quot;:&quot;text&quot;,&quot;default&quot;:&quot;Allvue&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Budget&quot;},&quot;supabaseUrl&quot;:{&quot;editor&quot;:&quot;text&quot;,&quot;default&quot;:&quot;&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Supabase&quot;},&quot;supabaseAnonKey&quot;:{&quot;editor&quot;:&quot;text&quot;,&quot;default&quot;:&quot;&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Supabase&quot;}}">
+class Component extends DCLogic {
+  state = {
+    ready: false, user: null, signUp: false, email: '', password: '', authError: '',
+    tab: 'budget', rows: [], sources: [], goals: [], budget: [], excluded: [], catMonth: 'all',
+    accountType: 'main', uploadMsg: '', goalMsg: '', savingGoal: false,
+    dId: null, dName: '', dTarget: '', dCurrent: '', dMonthly: '', dType: '', dRate: '', dDate: '',
+    aiText: '', aiLoading: false, live: false,
+    selected: [], groups: [], groupName: '',
+    drill: null, drillMonth: 'all'
+  };
+
+  // Money moving between my own accounts is not spend and not income, in either
+  // direction. Monzo labels these "Pot transfer"; the description also names the pot.
+  // Excluded symmetrically, so a main→pot move and the pot's own copy of it both drop out
+  // and the eventual card payment from the pot is the only time that money is counted.
+  isInternal(r) {
+    if ((r.type || '') === 'Pot transfer') return true;
+    const hay = ((r.type || '') + ' ' + (r.description || '')).toLowerCase();
+    return /\bpot\b/.test(hay);
+  }
+
+  // spend | refund | salary | other | transfer
+  classify(r) {
+    const amount = parseFloat(r.amount) || 0;
+    if (this.isInternal(r)) return 'transfer';
+    if (amount < 0) return 'spend';
+    const hay = (r.description || '') + ' ' + (r.category || '');
+    if (this.fuzzyMatch(hay, String(this.props.salaryMatch ?? 'Allvue'))) return 'salary';
+    // A credit on a card is a merchant refund, not income — it nets off the category.
+    if ((r.type || '') === 'Card payment') return 'refund';
+    return 'other';
+  }
+
+  norm(s) { return String(s || '').toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim(); }
+
+  editDistance(a, b) {
+    const m = a.length, n = b.length;
+    if (!m || !n) return Math.max(m, n);
+    let prev = Array.from({ length: n + 1 }, (_, j) => j);
+    for (let i = 1; i <= m; i++) {
+      const cur = [i];
+      for (let j = 1; j <= n; j++) {
+        cur[j] = Math.min(prev[j] + 1, cur[j - 1] + 1, prev[j - 1] + (a[i - 1] === b[j - 1] ? 0 : 1));
+      }
+      prev = cur;
+    }
+    return prev[n];
+  }
+
+  // Fuzzy: exact substring first, then per-token edit distance scaled to the needle's length,
+  // so "alvue", "allvu", "Allvue Systems" and "ALL VUE" all match "Allvue".
+  fuzzyMatch(haystack, needle) {
+    const h = this.norm(haystack), n = this.norm(needle);
+    if (!n) return false;
+    if (h.includes(n)) return true;
+    const compact = h.replace(/ /g, '');
+    if (compact.includes(n.replace(/ /g, ''))) return true;
+    const tol = n.length <= 4 ? 1 : n.length <= 8 ? 2 : 3;
+    const tokens = h.split(' ').filter(Boolean);
+    for (let i = 0; i < tokens.length; i++) {
+      if (this.editDistance(tokens[i], n) <= tol) return true;
+      if (i + 1 < tokens.length && this.editDistance(tokens[i] + tokens[i + 1], n) <= tol) return true;
+    }
+    return false;
+  }
+
+  parseDate(d) {
+    const p = String(d || '').split('/');
+    return p.length === 3 ? new Date(+p[2], +p[1] - 1, +p[0]).getTime() : 0;
+  }
+
+  async componentDidMount() {
+    // Credentials come from config.js (gitignored) or a tweak — never from this file, so
+    // the committed source carries no connection details and a collaborator without a
+    // config.js gets told to make one rather than silently landing in someone else's data.
+    const cfg = window.FINANCE_CONFIG || {};
+    const url = this.props.supabaseUrl || cfg.supabaseUrl || '';
+    const key = this.props.supabaseAnonKey || cfg.supabaseAnonKey || '';
+    if (!url || !key) {
+      this.setState({ ready: true, authError: 'No Supabase connection configured. Copy config.example.js to config.js and fill in your project URL and anon key, then reload.' });
+      return;
+    }
+    try {
+      const mod = await import('https://esm.sh/@supabase/supabase-js@2');
+      this.sb = mod.createClient(url, key);
+      const { data } = await this.sb.auth.getSession();
+      this.setState({ ready: true, user: data?.session?.user || null });
+      this.sub = this.sb.auth.onAuthStateChange((_e, session) => {
+        this.setState({ user: session?.user || null });
+        if (session?.user) this.loadAll(session.user.id);
+      });
+      if (data?.session?.user) this.loadAll(data.session.user.id);
+    } catch (err) {
+      this.setState({ ready: true, authError: 'Could not reach Supabase: ' + err.message });
+    }
+  }
+
+  componentWillUnmount() {
+    if (this.channel) this.sb.removeChannel(this.channel);
+    if (this.sub?.data?.subscription) this.sub.data.subscription.unsubscribe();
+  }
+
+  async loadAll(userId) {
+    if (!this.sb) return;
+    const [tx, src, goals, budget] = await Promise.all([
+      this.sb.from('monthly_data').select('*').eq('user_id', userId).order('date', { ascending: true }),
+      this.sb.from('source').select('*').eq('user_id', userId).order('created_at', { ascending: false }),
+      this.sb.from('goals').select('*').eq('user_id', userId),
+      this.sb.from('budget').select('bill, target, category').eq('user_id', userId)
+    ]);
+    const list = goals.data || [];
+    this.setState({ rows: tx.data || [], sources: src.data || [], goals: list, budget: budget.data || [] });
+    const keep = this.state.dId && list.some(g => g.id === this.state.dId);
+    if (!keep && list.length) this.pickGoal(list[0]);
+    if (!this.channel) this.subscribe(userId);
+  }
+
+  subscribe(userId) {
+    this.channel = this.sb.channel('finance-' + userId)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'monthly_data', filter: 'user_id=eq.' + userId }, () => this.loadAll(userId))
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'goals', filter: 'user_id=eq.' + userId }, () => this.loadAll(userId))
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'source', filter: 'user_id=eq.' + userId }, () => this.loadAll(userId))
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'budget', filter: 'user_id=eq.' + userId }, () => this.loadAll(userId))
+      .subscribe((status) => this.setState({ live: status === 'SUBSCRIBED' }));
+  }
+
+  money(n) {
+    const sym = this.props.currency || '£';
+    return sym + Number(n || 0).toLocaleString('en-GB', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  }
+
+  // Signed money: money in reads +, money out reads −.
+  signed(n) {
+    const v = Number(n) || 0;
+    if (v === 0) return this.money(0);
+    return (v > 0 ? '+' : '−') + this.money(Math.abs(v));
+  }
+
+  // The one place that decides whether a category counts as spend. Target, coverage and
+  // the category table all read it, so a target can never be summed over a category whose
+  // spend has been excluded.
+  countsAsSpend(category) {
+    const cat = String(category || '');
+    if (this.props.excludeSavings !== false && /saving/i.test(cat)) return false;
+    if (this.props.excludeOneOff !== false && /one ?[- ]?off/i.test(cat)) return false;
+    return true;
+  }
+
+  budgetLines() {
+    return (this.state.budget || []).filter(b => Number(b.target) > 0 && this.countsAsSpend(b.category));
+  }
+
+  // Saved budget lines are the target when they exist; the prop is the fallback.
+  target() {
+    const sum = this.budgetLines().reduce((t, b) => t + Number(b.target), 0);
+    return sum > 0 ? sum : Number(this.props.monthlyTarget ?? 650);
+  }
+
+  targetFromBudget() {
+    return this.budgetLines().length > 0;
+  }
+
+  // Budget coverage. Variance is only honest across the categories that actually have a
+  // budget line, so while a budget is being built up it compares like with like rather
+  // than measuring total spend against a target covering one category.
+  coverage(a) {
+    const budgeted = new Set();
+    this.budgetLines().forEach(b => budgeted.add(String(b.category || '').trim().toLowerCase()));
+    const all = Object.keys(a.byCategory);
+    const covered = all.filter(c => budgeted.has(String(c).trim().toLowerCase()));
+    const spend = covered.reduce((t, c) => t + a.byCategory[c], 0) / a.months;
+    return { budgeted, all: all.length, covered: covered.length, spend, partial: covered.length < all.length };
+  }
+
+  analyze() {
+    const excluded = new Set(this.state.excluded);
+    const rows = this.state.rows.filter(r => !excluded.has(r.type));
+    const byCategory = {}, byMonth = {}, byCatMonth = {};
+    const needle = String(this.props.salaryMatch ?? 'Allvue');
+    const splitSavings = this.props.excludeSavings !== false;
+    const splitOneOff = this.props.excludeOneOff !== false;
+    let totalSpend = 0, salaryIncome = 0, otherIncome = 0, refunds = 0,
+      transfersOut = 0, transfersIn = 0, savingsOut = 0, oneOffOut = 0;
+    rows.forEach(r => {
+      const amount = parseFloat(r.amount) || 0, abs = Math.abs(amount);
+      const kind = this.classify(r);
+      if (kind === 'transfer') { if (amount < 0) transfersOut += abs; else transfersIn += abs; return; }
+      if (kind === 'salary') { salaryIncome += amount; return; }
+      if (kind === 'other') { otherIncome += amount; return; }
+      // spend and refund both land in the category, refunds negative so they net off
+      const signedAbs = kind === 'refund' ? -abs : abs;
+      if (kind === 'refund') refunds += abs; else totalSpend += abs;
+      const isSavings = /saving/i.test(r.category || '');
+      const isOneOff = /one ?[- ]?off/i.test(r.category || '');
+      if (isSavings) savingsOut += signedAbs;
+      if (isOneOff) oneOffOut += signedAbs;
+      if (isSavings && splitSavings) return;
+      if (isOneOff && splitOneOff) return;
+      byCategory[r.category] = (byCategory[r.category] || 0) + signedAbs;
+      byMonth[r.month] = (byMonth[r.month] || 0) + signedAbs;
+      byCatMonth[r.month] = byCatMonth[r.month] || {};
+      byCatMonth[r.month][r.category] = (byCatMonth[r.month][r.category] || 0) + signedAbs;
+    });
+    totalSpend -= refunds;
+    const totalIncome = salaryIncome + otherIncome;
+    const months = new Set(rows.map(r => r.month)).size || 1;
+    const netSpend = totalSpend - (splitSavings ? savingsOut : 0) - (splitOneOff ? oneOffOut : 0);
+    return { rows, byCategory, byMonth, byCatMonth, months, totalSpend: netSpend, grossSpend: totalSpend,
+      totalIncome, salaryIncome, otherIncome, refunds, transfersOut, transfersIn, savingsOut, oneOffOut,
+      monthlyAverage: netSpend / months, monthlyIncome: totalIncome / months,
+      monthlySalary: salaryIncome / months, monthlyOther: otherIncome / months,
+      variance: netSpend / months - this.target() };
+  }
+
+  parseCSV(text) {
+    const lines = [];
+    let field = '', row = [], inQ = false;
+    for (let i = 0; i < text.length; i++) {
+      const c = text[i];
+      if (inQ) {
+        if (c === '"' && text[i + 1] === '"') { field += '"'; i++; }
+        else if (c === '"') inQ = false;
+        else field += c;
+      } else if (c === '"') inQ = true;
+      else if (c === ',') { row.push(field); field = ''; }
+      else if (c === '\n') { row.push(field); lines.push(row); row = []; field = ''; }
+      else if (c !== '\r') field += c;
+    }
+    if (field.length || row.length) { row.push(field); lines.push(row); }
+    if (!lines.length) return [];
+    const head = lines.shift().map(h => h.trim());
+    return lines.filter(l => l.length > 1).map(l => {
+      const o = {};
+      head.forEach((h, i) => { o[h] = (l[i] || '').trim(); });
+      return o;
+    });
+  }
+
+  onFile = async (e) => {
+    const file = e.target.files && e.target.files[0];
+    if (!file || !this.state.user) return;
+    if (this.state.sources.some(s => s.source_name === file.name)) {
+      this.setState({ uploadMsg: file.name + ' is already imported — delete it below first to re-import.' });
+      e.target.value = '';
+      return;
+    }
+    // A Monzo pot export names the pot in the filename; trust that over the dropdown.
+    const looksPot = /\bpot\b/i.test(file.name);
+    if (looksPot && this.state.accountType !== 'pot') this.setState({ accountType: 'pot' });
+    this.setState({ uploadMsg: 'Parsing ' + file.name + (looksPot ? ' as a pot statement…' : '…') });
+    const text = await file.text();
+    const parsed = this.parseCSV(text);
+    const userId = this.state.user.id;
+    const transactions = [];
+    parsed.forEach(r => {
+      if (!r.Date) return;
+      const parts = r.Date.split('/');
+      if (parts.length < 3) return;
+      const amount = parseFloat(r['Local amount']);
+      if (!amount) return;
+      transactions.push({
+        user_id: userId, month: parts[2] + '-' + parts[1], date: r.Date,
+        category: r.Category || 'Other', type: r.Type || 'unknown',
+        description: r.Name || r.Notes || '', amount, account_type: looksPot ? 'pot' : this.state.accountType
+      });
+    });
+    if (!transactions.length) { this.setState({ uploadMsg: 'No valid transactions found in that CSV.' }); return; }
+    const { data: src, error: srcErr } = await this.sb.from('source').insert({
+      user_id: userId, source_type: (looksPot || this.state.accountType === 'pot') ? 'pot_account' : 'main_account',
+      source_name: file.name, transaction_count: transactions.length
+    }).select();
+    if (srcErr) { this.setState({ uploadMsg: 'Could not create source: ' + srcErr.message }); return; }
+    const sourceId = src[0].id;
+    const { error } = await this.sb.from('monthly_data').insert(transactions.map(t => ({ ...t, source_id: sourceId })));
+    if (error) { this.setState({ uploadMsg: 'Import failed: ' + error.message }); return; }
+    this.setState({ uploadMsg: 'Imported ' + transactions.length + ' transactions from ' + file.name });
+    e.target.value = '';
+    this.loadAll(userId);
+  };
+
+  removeSource = async (id) => {
+    const src = this.state.sources.find(x => x.id === id);
+    const name = src ? src.source_name : 'that source';
+    if (!window.confirm('Delete ' + name + '? This removes '
+      + (src ? src.transaction_count : 'all its') + ' transactions from the database permanently.')) return;
+    this.setState({ uploadMsg: 'Deleting ' + name + '…' });
+    // .select() makes the deleted rows come back, so a silent zero-row delete —
+    // what a missing RLS delete policy produces — can be told apart from success.
+    const rows = await this.sb.from('monthly_data').delete().eq('source_id', id).select('id');
+    const source = await this.sb.from('source').delete().eq('id', id).select('id');
+    const err = rows.error || source.error;
+    if (err) { this.setState({ uploadMsg: 'Delete failed: ' + err.message }); return; }
+    if (!source.data?.length) {
+      this.setState({ uploadMsg: 'Nothing was deleted — the database rejected it silently. '
+        + 'Run supabase/delete-policies.sql in the SQL editor, then try again.' });
+      return;
+    }
+    this.setState({ uploadMsg: 'Deleted ' + name + ' and ' + (rows.data?.length || 0) + ' transactions.' });
+    this.loadAll(this.state.user.id);
+  };
+
+  submitAuth = async () => {
+    const { email, password, signUp } = this.state;
+    this.setState({ authError: '' });
+    const fn = signUp ? 'signUp' : 'signInWithPassword';
+    const res = await this.sb.auth[fn]({ email, password });
+    if (res.error) this.setState({ authError: res.error.message });
+    else this.setState({ email: '', password: '' });
+  };
+
+  // Blank stays blank: an empty field is stored as null, never coerced to 0.
+  num(v) {
+    if (v === '' || v === null || v === undefined) return null;
+    const n = Number(v);
+    return isNaN(n) ? null : n;
+  }
+
+  sectors() {
+    return [
+      { value: '', label: 'Not set', rate: null },
+      { value: 'current', label: 'Current account', rate: 0 },
+      { value: 'easy_access', label: 'Easy-access savings', rate: 3.5 },
+      { value: 'cash_isa', label: 'Cash ISA', rate: 4 },
+      { value: 'fixed_bond', label: 'Fixed-rate bond', rate: 4.5 },
+      { value: 'premium_bonds', label: 'Premium Bonds', rate: 3.8 },
+      { value: 'stocks_isa', label: 'Stocks & Shares ISA', rate: 6 },
+      { value: 'investment', label: 'General investment', rate: 6 },
+      { value: 'pension', label: 'Pension', rate: 6.5 },
+      { value: 'property', label: 'Property', rate: 4 },
+      { value: 'crypto', label: 'Crypto', rate: null }
+    ];
+  }
+
+  pickGoal(g) {
+    this.setState({
+      dId: g.id, dName: g.goal_name || '',
+      dTarget: g.goal_amount ?? '', dCurrent: g.current_amount ?? '', dMonthly: g.monthly_savings ?? '',
+      dType: g.savings_type || '', dRate: g.annual_rate ?? '', dDate: g.target_date || '', goalMsg: ''
+    });
+  }
+
+  saveGoal = async () => {
+    const s = this.state;
+    if (!s.user) return;
+    this.setState({ savingGoal: true, goalMsg: '' });
+    const payload = {
+      user_id: s.user.id,
+      goal_name: s.dName.trim() || 'Untitled goal',
+      goal_amount: this.num(s.dTarget),
+      current_amount: this.num(s.dCurrent),
+      monthly_savings: this.num(s.dMonthly),
+      savings_type: s.dType || null,
+      annual_rate: this.num(s.dRate),
+      target_date: s.dDate || null
+    };
+    let res = s.dId
+      ? await this.sb.from('goals').update(payload).eq('id', s.dId).select()
+      : await this.sb.from('goals').insert(payload).select();
+    // Older schemas lack the forecast columns — retry with the original four.
+    if (res.error && /column|schema cache/i.test(res.error.message)) {
+      const { savings_type, annual_rate, target_date, ...base } = payload;
+      res = s.dId
+        ? await this.sb.from('goals').update(base).eq('id', s.dId).select()
+        : await this.sb.from('goals').insert(base).select();
+      if (!res.error) res.warn = 'Saved, but growth settings need the new columns — run supabase/schema.sql.';
+    }
+    this.setState({
+      savingGoal: false,
+      goalMsg: res.error ? 'Save failed: ' + res.error.message : (res.warn || 'Goal saved.'),
+      dId: res.data && res.data[0] ? res.data[0].id : s.dId
+    });
+    if (!res.error) this.loadAll(s.user.id);
+  };
+
+  deleteGoal = async () => {
+    if (!this.state.dId) return;
+    await this.sb.from('goals').delete().eq('id', this.state.dId);
+    this.setState({ dId: null, dName: '', dTarget: '', dCurrent: '', dMonthly: '', dType: '', dRate: '', dDate: '', goalMsg: 'Goal deleted.' });
+    this.loadAll(this.state.user.id);
+  };
+
+  // Month-by-month compounding with a level contribution.
+  project(current, monthly, ratePct, target, capMonths) {
+    const r = (Number(ratePct) || 0) / 100 / 12;
+    let balance = Number(current) || 0, paid = 0, reached = null;
+    const cap = capMonths || 600;
+    const series = [{ month: 0, balance, paid, growth: 0 }];
+    if (target !== null && balance >= target) reached = 0;
+    for (let m = 1; m <= cap; m++) {
+      balance = balance * (1 + r) + (Number(monthly) || 0);
+      paid += Number(monthly) || 0;
+      series.push({ month: m, balance, paid, growth: balance - (Number(current) || 0) - paid });
+      if (reached === null && target !== null && balance >= target) reached = m;
+      if (reached !== null && m >= reached && m % 12 !== 0 && m > 120) break;
+    }
+    return { series, reached };
+  }
+
+  runAi = async () => {
+    if (!window.claude || !window.claude.complete) {
+      this.setState({ aiText: 'AI advice is unavailable in this environment.' });
+      return;
+    }
+    const a = this.analyze();
+    const cov = this.coverage(a);
+    const onBudget = this.targetFromBudget();
+    const budgetFor = c => {
+      const line = (this.state.budget || []).find(b => String(b.category || '').trim().toLowerCase() === String(c).trim().toLowerCase() && Number(b.target) > 0);
+      return line ? ', budget ' + this.money(Number(line.target)) + '/mo' : ', no budget set';
+    };
+    const cats = Object.entries(a.byCategory)
+      .sort((x, y) => y[1] - x[1])
+      .map(([c, v]) => c + ': ' + this.money(v / a.months) + '/mo' + (onBudget ? budgetFor(c) : ''))
+      .join('\n');
+    this.setState({ aiLoading: true, aiText: '' });
+    // Spend and target must be stated on the same basis, or the model reads unbudgeted
+    // categories as overspending.
+    const basis = onBudget
+      ? 'Their budget covers ' + cov.covered + ' of ' + cov.all + ' spending categories, totalling '
+        + this.money(this.target()) + '/mo. Actual spend in those budgeted categories is '
+        + this.money(cov.spend) + '/mo, so they are '
+        + (cov.spend > this.target() ? this.money(cov.spend - this.target()) + ' over' : this.money(this.target() - cov.spend) + ' under')
+        + ' on the part they have budgeted. Total spend across all categories is '
+        + this.money(a.monthlyAverage) + '/mo; the ' + (cov.all - cov.covered)
+        + ' unbudgeted categories are not overspending, they are simply not budgeted yet.'
+      : 'Total monthly spend is ' + this.money(a.monthlyAverage) + ' against a flat target of '
+        + this.money(this.target()) + '/mo covering everything.';
+    const prompt = 'You are a blunt, practical personal finance coach in the UK. '
+      + basis + ' Monthly income ' + this.money(a.monthlyIncome)
+      + '. Spend per category per month:\n' + cats
+      + '\nWrite four short paragraphs: where the money goes, the two categories worth cutting and by how much, '
+      + 'one habit change, and what a realistic budget for the unbudgeted categories would be worth over a year. '
+      + 'Do not describe unbudgeted categories as over budget. No headings, no bullet points, no preamble.';
+    try {
+      const out = await window.claude.complete(prompt);
+      this.setState({ aiLoading: false, aiText: out });
+    } catch (err) {
+      this.setState({ aiLoading: false, aiText: 'Could not generate advice: ' + err.message });
+    }
+  };
+
+  renderVals() {
+    const s = this.state;
+    const a = this.analyze();
+    // Monthly target per category, summed from the saved budget lines. A category with
+    // no budget line has no target, so it gets no verdict rather than a guessed one.
+    const budgetByCategory = {};
+    this.budgetLines().forEach(b => {
+      const cat = String(b.category || '').trim() || 'Other';
+      budgetByCategory[cat] = (budgetByCategory[cat] || 0) + Number(b.target);
+    });
+    const targetFor = names => names.reduce((t, n) => {
+      const key = Object.keys(budgetByCategory).find(k => k.toLowerCase() === String(n).toLowerCase());
+      return t + (key ? budgetByCategory[key] : 0);
+    }, 0);
+    // The category table can be pinned to one month. Divisor drops to 1 so the second
+    // column is that month's actual rather than an average of one.
+    const catMonth = s.catMonth || 'all';
+    const catSource = catMonth === 'all' ? a.byCategory : (a.byCatMonth[catMonth] || {});
+    const catDivisor = catMonth === 'all' ? a.months : 1;
+    const grouped = new Set();
+    s.groups.forEach(g => g.members.forEach(m => grouped.add(m)));
+    const units = [];
+    s.groups.forEach(g => {
+      const members = g.members.filter(m => a.byCategory[m] !== undefined);
+      if (!members.length) return;
+      units.push({ key: g.name, name: g.name, members, isGroup: true,
+        total: members.reduce((t, m) => t + (catSource[m] || 0), 0),
+        range: targetFor(members) });
+    });
+    Object.entries(catSource).forEach(([name, total]) => {
+      if (grouped.has(name)) return;
+      units.push({ key: name, name, members: [name], isGroup: false, total, range: targetFor([name]) });
+    });
+    const categoryRows = units.sort((x, y) => y.total - x.total).map(u => {
+      const monthly = u.total / catDivisor;
+      const hasTarget = u.range > 0;
+      const over = hasTarget && monthly > u.range;
+      return {
+        name: u.name, total: this.signed(-u.total), monthly: this.signed(-monthly),
+        target: hasTarget ? this.signed(-u.range) : '—',
+        status: !hasTarget ? 'No target' : over ? 'Over' : 'On target',
+        statusStyle: { fontSize: '11px', letterSpacing: '0.06em', textTransform: 'uppercase',
+          padding: '3px 8px', borderRadius: 'var(--radius-sm)', whiteSpace: 'nowrap',
+          color: !hasTarget ? 'var(--color-neutral-400)' : over ? 'var(--color-over)' : 'var(--color-under)',
+          border: '1px solid ' + (!hasTarget ? 'var(--color-neutral-700)' : over ? 'var(--color-over)' : 'var(--color-under)') },
+        varianceLabel: hasTarget ? this.signed(u.range - monthly) + ' a month' : '',
+        varianceColor: over ? 'var(--color-over)' : 'var(--color-under)',
+        isGroup: u.isGroup, memberLabel: u.members.length + ' categories',
+        checked: s.selected.includes(u.key),
+        select: () => this.setState(st => ({
+          selected: st.selected.includes(u.key) ? st.selected.filter(k => k !== u.key) : [...st.selected, u.key]
+        })),
+        ungroup: () => this.setState(st => ({
+          groups: st.groups.filter(g => g.name !== u.name),
+          selected: st.selected.filter(k => k !== u.key)
+        })),
+        open: () => this.setState({ drill: { name: u.name, members: u.members }, drillMonth: 'all' })
+      };
+    });
+    const selectedUnits = units.filter(u => s.selected.includes(u.key));
+
+    const needleProp = String(this.props.salaryMatch ?? 'Allvue');
+    const drill = s.drill;
+    let drillVals = { isDrill: false, drillRows: [], drillMonthChips: [] };
+    if (drill) {
+      const spendish = r => ['spend', 'refund'].includes(this.classify(r));
+      const inCat = drill.kind === 'income'
+        ? a.rows.filter(r => parseFloat(r.amount) > 0
+            && this.fuzzyMatch((r.description || '') + ' ' + (r.category || ''), needleProp) === drill.salary
+            && (drill.salary || this.classify(r) === 'other'))
+        : drill.kind === 'allSpend'
+          // Everything the headline counts, so the drill total reconciles to it exactly.
+          ? a.rows.filter(r => spendish(r)
+              && (this.props.excludeSavings === false || !/saving/i.test(r.category || ''))
+              && (this.props.excludeOneOff === false || !/one ?[- ]?off/i.test(r.category || '')))
+          : a.rows.filter(r => drill.members.includes(r.category) && spendish(r));
+      const monthsIn = [...new Set(inCat.map(r => r.month))].sort();
+      const shown = s.drillMonth === 'all' ? inCat : inCat.filter(r => r.month === s.drillMonth);
+      const total = shown.reduce((t, r) => t + (parseFloat(r.amount) || 0), 0);
+      const spanMonths = s.drillMonth === 'all' ? a.months : 1;
+      const biggest = shown.reduce((m, r) => (Math.abs(r.amount) > Math.abs(m.amount || 0) ? r : m), {});
+      drillVals = {
+        isDrill: true,
+        drillName: drill.name,
+        drillKicker: drill.kind === 'income' ? 'Income detail'
+          : drill.kind === 'allSpend' ? 'Spend detail' : 'Category detail',
+        drillMembersLabel: drill.kind === 'income'
+          ? (drill.salary ? 'Fuzzy match on “' + needleProp + '”' : 'Everything not matching “' + needleProp + '”')
+          : drill.kind === 'allSpend'
+            ? 'Largest first · pot transfers excluded'
+              + (this.props.excludeSavings === false ? '' : ' · savings excluded')
+              + (this.props.excludeOneOff === false ? '' : ' · one-off payments excluded')
+          : (drill.members.length > 1 ? drill.members.join(' · ') : ''),
+        drillTotal: this.signed(total),
+        drillMonthly: this.signed(total / spanMonths),
+        drillCount: String(shown.length),
+        drillMax: biggest.amount ? this.signed(biggest.amount) : '—',
+        drillMaxWhat: biggest.description || biggest.date || '',
+        drillEmpty: shown.length === 0,
+        closeDrill: () => this.setState({ drill: null }),
+        drillMonthChips: [{ key: 'all', label: 'All months' }].concat(monthsIn.map(m => {
+          const d = new Date(m + '-01');
+          return { key: m, label: isNaN(d) ? m : d.toLocaleDateString('en-GB', { month: 'short', year: '2-digit' }) };
+        })).map(c => ({
+          label: c.label,
+          cls: s.drillMonth === c.key ? 'btn-primary' : 'btn-secondary',
+          pick: () => this.setState({ drillMonth: c.key })
+        })),
+        drillRows: shown.sort(drill.kind === 'allSpend'
+          ? (x, y) => Math.abs(parseFloat(y.amount) || 0) - Math.abs(parseFloat(x.amount) || 0)
+          : (x, y) => this.parseDate(y.date) - this.parseDate(x.date)).map(r => ({
+          date: r.date, description: r.description || '—', category: r.category,
+          type: r.type, amount: this.signed(parseFloat(r.amount) || 0)
+        }))
+      };
+    }
+    const maxMonth = Math.max(1, ...Object.values(a.byMonth));
+    const monthBars = Object.keys(a.byMonth).sort().map(m => {
+      const v = a.byMonth[m];
+      const d = new Date(m + '-01');
+      return {
+        label: isNaN(d) ? m : d.toLocaleDateString('en-GB', { month: 'short', year: '2-digit' }),
+        value: '−' + Math.round(v).toLocaleString('en-GB'),
+        style: { width: '100%', height: Math.max(2, (v / maxMonth) * 100) + '%', borderRadius: '3px 3px 0 0',
+          background: 'linear-gradient(180deg, var(--color-accent) 0%, var(--color-accent-700) 100%)' }
+      };
+    });
+    const types = [...new Set(s.rows.map(r => r.type))].sort();
+    const typeChips = types.map(t => ({
+      label: t, cls: s.excluded.includes(t) ? 'btn-secondary' : 'btn-primary',
+      toggle: () => this.setState(st => ({ excluded: st.excluded.includes(t) ? st.excluded.filter(x => x !== t) : [...st.excluded, t] }))
+    }));
+    const sectors = this.sectors();
+    const target = this.num(s.dTarget), current = this.num(s.dCurrent), monthly = this.num(s.dMonthly);
+    const sector = sectors.find(x => x.value === s.dType);
+    const rate = this.num(s.dRate) !== null ? this.num(s.dRate) : (sector ? sector.rate : null);
+    const pct = target && target > 0 && current !== null ? Math.min(100, (current / target) * 100) : 0;
+    const remaining = target !== null ? Math.max(0, target - (current || 0)) : null;
+
+    const proj = this.project(current || 0, monthly || 0, rate || 0, target);
+    const flat = this.project(current || 0, monthly || 0, 0, target);
+    const reached = proj.reached;
+    const reachedAt = new Date();
+    if (reached !== null) reachedAt.setMonth(reachedAt.getMonth() + reached);
+    const atReach = reached !== null ? proj.series[reached] : null;
+
+    const horizon = reached !== null ? Math.ceil(reached / 12) : 10;
+    const forecastRows = [];
+    // Nothing to project from: no pot, no contribution, or a static pot with no growth.
+    const canForecast = (monthly || 0) > 0 || ((current || 0) > 0 && (rate || 0) > 0);
+    for (let y = 1; canForecast && y <= Math.min(horizon, 15); y++) {
+      const pt = proj.series[Math.min(y * 12, proj.series.length - 1)];
+      if (!pt) break;
+      forecastRows.push({
+        year: 'Year ' + y,
+        paid: this.signed(pt.paid),
+        growth: this.signed(pt.growth),
+        balance: this.money(pt.balance),
+        pct: target ? Math.min(100, (pt.balance / target) * 100).toFixed(0) + '%' : '—'
+      });
+    }
+
+    let neededMonthly = '—', neededMonthlyNote = 'Set a target date';
+    if (s.dDate && target !== null) {
+      const [yy, mm] = s.dDate.split('-').map(Number);
+      const now = new Date();
+      const n = (yy - now.getFullYear()) * 12 + (mm - 1 - now.getMonth());
+      if (n > 0) {
+        const r = (rate || 0) / 100 / 12;
+        const fv = (current || 0) * Math.pow(1 + r, n);
+        const factor = r === 0 ? n : (Math.pow(1 + r, n) - 1) / r;
+        const need = Math.max(0, (target - fv) / factor);
+        neededMonthly = this.money(need);
+        neededMonthlyNote = n + ' months away' + (monthly ? ', ' + this.money(Math.abs(need - monthly)) + (need > monthly ? ' more than now' : ' less than now') : '');
+      } else {
+        neededMonthlyNote = 'That date has passed';
+      }
+    } else if (!s.dDate) {
+      neededMonthlyNote = 'No target date set';
+    }
+    const topCat = categoryRows[0];
+    const cvg = this.coverage(a);
+    const onBudget = this.targetFromBudget();
+    const insVariance = onBudget ? cvg.spend - this.target() : a.variance;
+    const insScope = onBudget
+      ? ' across the ' + cvg.covered + (cvg.covered === 1 ? ' category' : ' categories') + ' you have budgeted'
+      : '';
+    const insightLines = a.totalSpend === 0
+      ? [{ text: 'No transactions imported yet. Add a Monzo CSV on the Budget tab and the analysis appears here.' }]
+      : [
+        { text: 'You have spent ' + this.money(a.totalSpend) + ' across ' + a.months + ' months, an average of ' + this.money(a.monthlyAverage) + ' a month.' },
+        topCat ? { text: 'Largest category is ' + topCat.name + ' at ' + topCat.monthly + ' a month.' } : { text: '' },
+        { text: insVariance > 0
+          ? 'You are ' + this.money(insVariance) + ' over target each month' + insScope + ', or ' + this.money(insVariance * 12) + ' a year.'
+          : 'You are ' + this.money(Math.abs(insVariance)) + ' under target each month' + insScope + '.' },
+        onBudget && cvg.partial
+          ? { text: (cvg.all - cvg.covered) + ' categories have no budget line yet, so they sit outside that comparison.' }
+          : { text: '' },
+        { text: 'Income averages ' + this.money(a.monthlyIncome) + ' a month, leaving ' + this.signed(a.monthlyIncome - a.monthlyAverage) + ' before savings.' }
+      ].filter(l => l.text);
+
+    const monthLabel = m => {
+      const d = new Date(m + '-01');
+      return isNaN(d) ? m : d.toLocaleDateString('en-GB', { month: 'short', year: '2-digit' });
+    };
+    const catMonthChips = [{ key: 'all', label: 'All months' }]
+      .concat(Object.keys(a.byMonth).sort().map(m => ({ key: m, label: monthLabel(m) })))
+      .map(c => ({
+        label: c.label,
+        cls: catMonth === c.key ? 'btn-primary' : 'btn-secondary',
+        pick: () => this.setState({ catMonth: c.key })
+      }));
+
+    const cov = this.coverage(a);
+    const fromBudget = this.targetFromBudget();
+    // Budgeted categories against their own budget, so partial coverage cannot inflate it.
+    const effVariance = fromBudget ? cov.spend - this.target() : a.variance;
+
+    return {
+      varianceKicker: fromBudget ? 'Variance on budgeted' : 'Variance',
+      showAuth: s.ready && !s.user, showApp: !s.ready || !!s.user,
+      email: s.email, password: s.password, authError: s.authError,
+      onEmail: e => this.setState({ email: e.target.value }),
+      onPassword: e => this.setState({ password: e.target.value }),
+      submitAuth: this.submitAuth,
+      authActionLabel: s.signUp ? 'Create account' : 'Sign in',
+      authToggleLabel: s.signUp ? 'I already have an account' : 'Create an account instead',
+      toggleAuthMode: () => this.setState(st => ({ signUp: !st.signUp, authError: '' })),
+      userEmail: s.user ? s.user.email : '',
+      liveLabel: s.live ? 'Live' : '',
+      signOut: () => this.sb.auth.signOut(),
+      ...drillVals,
+      isBudget: s.tab === 'budget' && !s.drill,
+      isGoals: s.tab === 'goals' && !s.drill,
+      isInsights: s.tab === 'insights' && !s.drill,
+      goBudget: () => this.setState({ tab: 'budget', drill: null }),
+      goGoals: () => this.setState({ tab: 'goals', drill: null }),
+      goInsights: () => this.setState({ tab: 'insights', drill: null }),
+      budgetTabClass: s.tab === 'budget' ? 'btn-primary' : 'btn-secondary',
+      goalsTabClass: s.tab === 'goals' ? 'btn-primary' : 'btn-secondary',
+      insightsTabClass: s.tab === 'insights' ? 'btn-primary' : 'btn-secondary',
+      totalSpend: this.signed(-a.totalSpend),
+      monthCountLabel: a.months + (a.months === 1 ? ' month' : ' months'),
+      monthlyAvg: this.signed(-a.monthlyAverage),
+      targetLabel: 'target ' + this.signed(-this.target())
+        + (fromBudget ? ' from ' + cov.covered + (cov.covered === 1 ? ' budgeted category' : ' budgeted categories') : ''),
+      variance: this.signed(-effVariance),
+      variancePct: fromBudget
+        ? cov.covered + ' of ' + cov.all + ' categories budgeted'
+        : (this.target() ? ((effVariance / this.target()) * 100).toFixed(1) : '0') + '% of target',
+      varianceStyle: { fontFamily: 'var(--font-heading)', fontSize: 'clamp(20px, 2.2vw, 30px)', lineHeight: 1, whiteSpace: 'nowrap',
+        color: effVariance > 0 ? 'var(--color-over)' : 'var(--color-under)' },
+      monthlyIncome: this.signed(a.monthlyIncome),
+      totalIncomeLabel: this.signed(a.totalIncome) + ' all time',
+      salaryLabel: needleProp + ' income',
+      monthlySalary: this.signed(a.monthlySalary),
+      totalSalaryLabel: this.signed(a.salaryIncome) + ' all time',
+      monthlyOther: this.signed(a.monthlyOther),
+      totalOtherLabel: this.signed(a.otherIncome) + ' all time',
+      potExcludedLabel: a.transfersIn > 0 ? this.money(a.transfersIn) + ' in pot withdrawals excluded' : '',
+      transferExcludedLabel: a.transfersOut > 0 ? this.money(a.transfersOut) + ' in pot deposits excluded' : '',
+      refundLabel: a.refunds > 0 ? this.money(a.refunds) + ' in refunds netted off' : '',
+      savingsOutLabel: a.savingsOut > 0 && this.props.excludeSavings !== false
+        ? this.money(a.savingsOut) + ' to savings, counted separately'
+        : '',
+      oneOffOutLabel: a.oneOffOut > 0 && this.props.excludeOneOff !== false
+        ? this.money(a.oneOffOut) + ' in one-off payments, counted separately'
+        : '',
+      openAllSpend: () => this.setState({ drill: { kind: 'allSpend', name: 'All spend', members: [] }, drillMonth: 'all' }),
+      openSalary: () => this.setState({ drill: { kind: 'income', salary: true, name: needleProp + ' income', members: [] }, drillMonth: 'all' }),
+      openOther: () => this.setState({ drill: { kind: 'income', salary: false, name: 'Other income', members: [] }, drillMonth: 'all' }),
+      categoryRows, monthBars, typeChips, noData: a.totalSpend === 0,
+      catMonthChips,
+      catAllTimeHeader: catMonth === 'all' ? 'All time' : monthLabel(catMonth),
+      catMonthlyHeader: catMonth === 'all' ? 'Monthly avg' : 'That month',
+      canCombine: selectedUnits.length >= 2,
+      combineLabel: 'Combine ' + selectedUnits.length + ' rows',
+      groupName: s.groupName,
+      onGroupName: e => this.setState({ groupName: e.target.value }),
+      combineSelected: () => {
+        const members = selectedUnits.reduce((all, u) => all.concat(u.members), []);
+        const name = (s.groupName || '').trim() || selectedUnits.map(u => u.name).join(' + ');
+        this.setState(st => ({
+          groups: [...st.groups.filter(g => !selectedUnits.some(u => u.isGroup && u.name === g.name)), { name, members }],
+          selected: [], groupName: ''
+        }));
+      },
+      accountType: s.accountType, onAccountType: e => this.setState({ accountType: e.target.value }),
+      onFile: this.onFile, uploadMsg: s.uploadMsg,
+      sources: s.sources.map(x => ({
+        name: x.source_name, kind: x.source_type === 'main_account' ? 'Main' : 'Pot',
+        count: x.transaction_count + ' rows',
+        when: x.created_at ? new Date(x.created_at).toLocaleDateString('en-GB') : '',
+        remove: () => this.removeSource(x.id)
+      })),
+      dName: s.dName, dTarget: s.dTarget, dCurrent: s.dCurrent, dMonthly: s.dMonthly,
+      dType: s.dType, dRate: s.dRate, dDate: s.dDate,
+      onDName: e => this.setState({ dName: e.target.value }),
+      onDTarget: e => this.setState({ dTarget: e.target.value }),
+      onDCurrent: e => this.setState({ dCurrent: e.target.value }),
+      onDMonthly: e => this.setState({ dMonthly: e.target.value }),
+      onDRate: e => this.setState({ dRate: e.target.value }),
+      onDDate: e => this.setState({ dDate: e.target.value }),
+      onDType: e => {
+        const v = e.target.value;
+        const prev = sectors.find(x => x.value === s.dType);
+        const next = sectors.find(x => x.value === v);
+        const rateWasDefault = s.dRate === '' || (prev && String(prev.rate) === String(s.dRate));
+        this.setState({ dType: v, dRate: rateWasDefault && next && next.rate !== null ? String(next.rate) : s.dRate });
+      },
+      sectorOptions: sectors.map(x => ({ value: x.value, label: x.rate === null ? x.label : x.label + ' · ' + x.rate + '%' })),
+      ratePlaceholder: sector && sector.rate !== null ? String(sector.rate) : 'blank = no growth',
+      editorTitle: s.dId ? 'Edit goal' : 'New goal',
+      canDelete: !!s.dId,
+      deleteGoal: this.deleteGoal,
+      newGoal: () => this.setState({ dId: null, dName: '', dTarget: '', dCurrent: '', dMonthly: '', dType: '', dRate: '', dDate: '', goalMsg: '' }),
+      noGoals: s.goals.length === 0,
+      goalList: s.goals.map(g => {
+        const p = g.goal_amount ? Math.min(100, ((g.current_amount || 0) / g.goal_amount) * 100) : 0;
+        const on = g.id === s.dId;
+        return {
+          name: g.goal_name,
+          line: g.goal_amount ? this.money(g.current_amount || 0) + ' of ' + this.money(g.goal_amount) : 'No target set',
+          pick: () => this.pickGoal(g),
+          style: { display: 'flex', flexDirection: 'column', gap: '2px', textAlign: 'left', cursor: 'pointer',
+            padding: '10px 12px', borderRadius: 'var(--radius-md)', font: 'inherit', color: 'var(--color-text)',
+            background: on ? 'var(--color-accent-900)' : 'transparent',
+            border: '1px solid ' + (on ? 'var(--color-accent)' : 'var(--color-divider)') },
+          barStyle: { display: 'block', width: p + '%', height: '100%', background: 'var(--color-accent)' }
+        };
+      }),
+      saveGoal: this.saveGoal, saveGoalLabel: s.savingGoal ? 'Saving…' : s.dId ? 'Save changes' : 'Create goal', goalMsg: s.goalMsg,
+      activeGoalName: (s.dName || '').trim() || 'Untitled goal',
+      goalScopeLabel: s.dId ? 'for ' + ((s.dName || '').trim() || 'this goal') : 'for a goal you have not saved yet',
+      goalSaved: current !== null ? this.money(current) : '—',
+      goalTargetLabel: target !== null ? 'of ' + this.money(target) : 'no target set',
+      goalRemaining: remaining !== null ? this.money(remaining) : '—',
+      goalPct: target ? pct.toFixed(1) + '%' : '—',
+      goalMonthlyLabel: monthly !== null ? this.money(monthly) + '/mo' : '—',
+      goalHeldLabel: sector && sector.value ? sector.label : 'not allocated',
+      progressStyle: { width: pct + '%', height: '100%', background: 'var(--color-accent)' },
+      goalNote: target === null ? 'Add a target amount and this fills in.'
+        : monthly === null || monthly <= 0 ? 'Add a monthly contribution to see when you reach ' + this.money(target) + '.'
+        : reached === null ? 'At ' + this.money(monthly) + ' a month you do not reach ' + this.money(target) + ' within 50 years.'
+        : reached === 0 ? 'Already there — ' + this.money(current || 0) + ' against a ' + this.money(target) + ' target.'
+        : this.money(target) + ' in ' + reached + ' months, ' + (rate ? 'assuming ' + rate + '% growth a year.' : 'with no growth assumed.'),
+      forecastAssumption: rate ? (sector && sector.value ? sector.label + ' · ' : '') + rate + '% a year, compounded monthly'
+        : 'No growth rate set — pick where the money is held',
+      reachedDate: reached === null ? '—' : reached === 0 ? 'Reached' : reachedAt.toLocaleDateString('en-GB', { month: 'short', year: 'numeric' }),
+      reachedMonths: reached === null ? (target === null ? 'no target set' : 'not within 50 years') : reached + ' months',
+      growthEarned: atReach ? this.signed(atReach.growth) : '—',
+      growthVsFlat: atReach && flat.reached !== null && reached !== null && flat.reached > reached
+        ? (flat.reached - reached) + ' months sooner than with no growth' : 'vs no growth',
+      neededMonthly, neededMonthlyNote,
+      forecastRows,
+      forecastEmpty: forecastRows.length === 0,
+      forecastEmptyNote: monthly === null && current === null
+        ? 'Fill in what you have saved and what you put away each month to see a forecast.'
+        : 'Add a monthly contribution or a starting balance to project forward.',
+      insightLines, aiText: s.aiText,
+      aiButtonLabel: s.aiLoading ? 'Thinking…' : s.aiText ? 'Regenerate advice' : 'Generate advice',
+      runAi: this.runAi
+    };
+  }
+}
+
+</script>
+</body>
+</html>
