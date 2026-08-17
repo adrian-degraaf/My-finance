@@ -195,10 +195,34 @@
                 <button class="btn btn-primary" onClick="{{ combineSelected }}">{{ combineLabel }}</button>
               </sc-if>
             </div>
-            <div style="display: flex; align-items: center; gap: 6px; flex-wrap: wrap;">
-              <sc-for list="{{ catMonthChips }}" as="chip" hint-placeholder-count="5">
-                <button class="btn {{ chip.cls }}" onClick="{{ chip.pick }}">{{ chip.label }}</button>
-              </sc-for>
+            <div style="display: flex; align-items: center; gap: 16px; flex-wrap: wrap; justify-content: space-between;">
+              <div style="display: flex; align-items: center; gap: 6px; flex-wrap: wrap;">
+                <sc-for list="{{ catMonthChips }}" as="chip" hint-placeholder-count="5">
+                  <button class="btn {{ chip.cls }}" onClick="{{ chip.pick }}">{{ chip.label }}</button>
+                </sc-for>
+              </div>
+              <div style="display: flex; align-items: center; gap: 16px; flex-wrap: wrap;">
+                <div style="display: flex; align-items: center; gap: 7px; position: relative;">
+                  <label style="display: flex; align-items: center; gap: 7px; font-size: 13px; opacity: 0.7; cursor: pointer; white-space: nowrap;">
+                    <input type="checkbox" checked="{{ exSavings }}" onChange="{{ onExSavings }}" style="accent-color: var(--color-accent); cursor: pointer;">
+                    Exclude savings
+                  </label>
+                  <button type="button" aria-label="What does excluding savings do?" onMouseEnter="{{ showTipSavings }}" onMouseLeave="{{ hideTip }}" onFocus="{{ showTipSavings }}" onBlur="{{ hideTip }}" onClick="{{ toggleTipSavings }}" style="width: 16px; height: 16px; flex: none; display: grid; place-items: center; border-radius: 50%; border: 1px solid var(--color-neutral-600); background: transparent; color: var(--color-neutral-300); font-family: var(--font-body); font-size: 10px; line-height: 1; cursor: help; padding: 0;" style-hover="border-color: var(--color-accent); color: var(--color-accent);">i</button>
+                  <sc-if value="{{ tipSavings }}" hint-placeholder-val="{{ false }}">
+                    <div role="tooltip" style="position: absolute; bottom: calc(100% + 8px); left: 0; z-index: 40; width: 260px; padding: 10px 12px; border-radius: var(--radius-sm); border: 1px solid var(--color-neutral-700); background: var(--color-neutral-900); box-shadow: var(--shadow-md); font-size: 12px; line-height: 1.5; color: var(--color-text); text-wrap: pretty;">Money moved into savings is a real outflow, but it is not spending. Excluded here, it is counted separately below — so a month you saved hard does not read as a month you overspent.</div>
+                  </sc-if>
+                </div>
+                <div style="display: flex; align-items: center; gap: 7px; position: relative;">
+                  <label style="display: flex; align-items: center; gap: 7px; font-size: 13px; opacity: 0.7; cursor: pointer; white-space: nowrap;">
+                    <input type="checkbox" checked="{{ exOneOff }}" onChange="{{ onExOneOff }}" style="accent-color: var(--color-accent); cursor: pointer;">
+                    Exclude one-off payments
+                  </label>
+                  <button type="button" aria-label="What does excluding one-off payments do?" onMouseEnter="{{ showTipOneOff }}" onMouseLeave="{{ hideTip }}" onFocus="{{ showTipOneOff }}" onBlur="{{ hideTip }}" onClick="{{ toggleTipOneOff }}" style="width: 16px; height: 16px; flex: none; display: grid; place-items: center; border-radius: 50%; border: 1px solid var(--color-neutral-600); background: transparent; color: var(--color-neutral-300); font-family: var(--font-body); font-size: 10px; line-height: 1; cursor: help; padding: 0;" style-hover="border-color: var(--color-accent); color: var(--color-accent);">i</button>
+                  <sc-if value="{{ tipOneOff }}" hint-placeholder-val="{{ false }}">
+                    <div role="tooltip" style="position: absolute; bottom: calc(100% + 8px); right: 0; z-index: 40; width: 260px; padding: 10px 12px; border-radius: var(--radius-sm); border: 1px solid var(--color-neutral-700); background: var(--color-neutral-900); box-shadow: var(--shadow-md); font-size: 12px; line-height: 1.5; color: var(--color-text); text-wrap: pretty;">One-off payments are irregular by nature — a visa renewal, a rental deposit. Left in, a single large payment dominates the monthly average and makes an ordinary month look catastrophic.</div>
+                  </sc-if>
+                </div>
+              </div>
             </div>
             <table class="table">
               <thead>
@@ -488,6 +512,7 @@ class Component extends DCLogic {
   state = {
     ready: false, user: null, signUp: false, email: '', password: '', authError: '',
     tab: 'budget', rows: [], sources: [], goals: [], budget: [], excluded: [], catMonth: 'all',
+    exSavings: null, exOneOff: null, tip: '',
     accountType: 'main', uploadMsg: '', goalMsg: '', savingGoal: false,
     dId: null, dName: '', dTarget: '', dCurrent: '', dMonthly: '', dType: '', dRate: '', dDate: '',
     aiText: '', aiLoading: false, live: false,
@@ -625,10 +650,21 @@ class Component extends DCLogic {
   // The one place that decides whether a category counts as spend. Target, coverage and
   // the category table all read it, so a target can never be summed over a category whose
   // spend has been excluded.
+  // In-page toggles. The prop supplies the initial value so the editor's Tweaks panel
+  // still works, but once the user flips a switch on the page that choice wins — which is
+  // what makes the toggles work in a plain browser, where props do not exist.
+  exSavings() {
+    return this.state.exSavings ?? (this.props.excludeSavings !== false);
+  }
+
+  exOneOff() {
+    return this.state.exOneOff ?? (this.props.excludeOneOff !== false);
+  }
+
   countsAsSpend(category) {
     const cat = String(category || '');
-    if (this.props.excludeSavings !== false && /saving/i.test(cat)) return false;
-    if (this.props.excludeOneOff !== false && /one ?[- ]?off/i.test(cat)) return false;
+    if (this.exSavings() && /saving/i.test(cat)) return false;
+    if (this.exOneOff() && /one ?[- ]?off/i.test(cat)) return false;
     return true;
   }
 
@@ -663,8 +699,8 @@ class Component extends DCLogic {
     const rows = this.state.rows.filter(r => !excluded.has(r.type));
     const byCategory = {}, byMonth = {}, byCatMonth = {};
     const needle = String(this.props.salaryMatch ?? 'Allvue');
-    const splitSavings = this.props.excludeSavings !== false;
-    const splitOneOff = this.props.excludeOneOff !== false;
+    const splitSavings = this.exSavings();
+    const splitOneOff = this.exOneOff();
     let totalSpend = 0, salaryIncome = 0, otherIncome = 0, refunds = 0,
       transfersOut = 0, transfersIn = 0, savingsOut = 0, oneOffOut = 0;
     rows.forEach(r => {
@@ -790,8 +826,14 @@ class Component extends DCLogic {
     this.setState({ authError: '' });
     const fn = signUp ? 'signUp' : 'signInWithPassword';
     const res = await this.sb.auth[fn]({ email, password });
-    if (res.error) this.setState({ authError: res.error.message });
-    else this.setState({ email: '', password: '' });
+    if (res.error) { this.setState({ authError: res.error.message }); return; }
+    // Sign-up with email confirmation on returns a user but no session. Without
+    // this the button appeared to do nothing at all.
+    if (signUp && !res.data?.session) {
+      this.setState({ email: '', password: '', authError: 'Account created. Check ' + email + ' for a confirmation link, then sign in.' });
+      return;
+    }
+    this.setState({ email: '', password: '' });
   };
 
   // Blank stays blank: an empty field is stored as null, never coerced to 0.
@@ -998,8 +1040,7 @@ class Component extends DCLogic {
         : drill.kind === 'allSpend'
           // Everything the headline counts, so the drill total reconciles to it exactly.
           ? a.rows.filter(r => spendish(r)
-              && (this.props.excludeSavings === false || !/saving/i.test(r.category || ''))
-              && (this.props.excludeOneOff === false || !/one ?[- ]?off/i.test(r.category || '')))
+              && this.countsAsSpend(r.category))
           : a.rows.filter(r => drill.members.includes(r.category) && spendish(r));
       const monthsIn = [...new Set(inCat.map(r => r.month))].sort();
       const shown = s.drillMonth === 'all' ? inCat : inCat.filter(r => r.month === s.drillMonth);
@@ -1015,8 +1056,8 @@ class Component extends DCLogic {
           ? (drill.salary ? 'Fuzzy match on “' + needleProp + '”' : 'Everything not matching “' + needleProp + '”')
           : drill.kind === 'allSpend'
             ? 'Largest first · pot transfers excluded'
-              + (this.props.excludeSavings === false ? '' : ' · savings excluded')
-              + (this.props.excludeOneOff === false ? '' : ' · one-off payments excluded')
+              + (this.exSavings() ? ' · savings excluded' : '')
+              + (this.exOneOff() ? ' · one-off payments excluded' : '')
           : (drill.members.length > 1 ? drill.members.join(' · ') : ''),
         drillTotal: this.signed(total),
         drillMonthly: this.signed(total / spanMonths),
@@ -1187,16 +1228,27 @@ class Component extends DCLogic {
       potExcludedLabel: a.transfersIn > 0 ? this.money(a.transfersIn) + ' in pot withdrawals excluded' : '',
       transferExcludedLabel: a.transfersOut > 0 ? this.money(a.transfersOut) + ' in pot deposits excluded' : '',
       refundLabel: a.refunds > 0 ? this.money(a.refunds) + ' in refunds netted off' : '',
-      savingsOutLabel: a.savingsOut > 0 && this.props.excludeSavings !== false
+      savingsOutLabel: a.savingsOut > 0 && this.exSavings()
         ? this.money(a.savingsOut) + ' to savings, counted separately'
         : '',
-      oneOffOutLabel: a.oneOffOut > 0 && this.props.excludeOneOff !== false
+      oneOffOutLabel: a.oneOffOut > 0 && this.exOneOff()
         ? this.money(a.oneOffOut) + ' in one-off payments, counted separately'
         : '',
       openAllSpend: () => this.setState({ drill: { kind: 'allSpend', name: 'All spend', members: [] }, drillMonth: 'all' }),
       openSalary: () => this.setState({ drill: { kind: 'income', salary: true, name: needleProp + ' income', members: [] }, drillMonth: 'all' }),
       openOther: () => this.setState({ drill: { kind: 'income', salary: false, name: 'Other income', members: [] }, drillMonth: 'all' }),
       categoryRows, monthBars, typeChips, noData: a.totalSpend === 0,
+      exSavings: this.exSavings(),
+      exOneOff: this.exOneOff(),
+      onExSavings: e => this.setState({ exSavings: e.target.checked }),
+      onExOneOff: e => this.setState({ exOneOff: e.target.checked }),
+      tipSavings: s.tip === 'savings', tipOneOff: s.tip === 'oneOff',
+      showTipSavings: () => this.setState({ tip: 'savings' }),
+      showTipOneOff: () => this.setState({ tip: 'oneOff' }),
+      hideTip: () => this.setState({ tip: '' }),
+      // Click keeps it open on touch, where there is no hover.
+      toggleTipSavings: () => this.setState(st => ({ tip: st.tip === 'savings' ? '' : 'savings' })),
+      toggleTipOneOff: () => this.setState(st => ({ tip: st.tip === 'oneOff' ? '' : 'oneOff' })),
       catMonthChips,
       catAllTimeHeader: catMonth === 'all' ? 'All time' : monthLabel(catMonth),
       catMonthlyHeader: catMonth === 'all' ? 'Monthly avg' : 'That month',
