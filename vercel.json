@@ -1,0 +1,7 @@
+{
+  "cleanUrls": true,
+  "rewrites": [
+    { "source": "/tracker", "destination": "/Finance Tracker.dc.html" },
+    { "source": "/budget", "destination": "/Budget Setup.dc.html" }
+  ]
+}

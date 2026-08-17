@@ -15,23 +15,41 @@ with `file://` will not work.
 ```sh
 git clone <this repo>
 cd <this repo>
-cp config.example.js config.js     # then fill in your Supabase URL and anon key
 python3 -m http.server 8000
 ```
 
-Open <http://localhost:8000/Finance%20Tracker.dc.html>.
+Open <http://localhost:8000/> — `index.html` forwards to the tracker.
 
 Any static server works — `npx serve`, `php -S localhost:8000`, whatever you have.
 
 ## Configuration
 
-`config.js` holds the Supabase URL and anon key. It is gitignored; copy
-`config.example.js` and fill in your own values, or ask whoever runs the project
-for theirs.
+`config.js` holds the Supabase URL and anon key.
 
-The anon key is safe in a browser. It grants nothing on its own — every table has
-row-level security, so a signed-in user can only read and write their own rows.
-It is kept out of the repo as hygiene, not as a secret.
+It is committed, deliberately. A browser app has to hand its credentials to the
+browser — there is nowhere to hide them, and anyone can read them from devtools on
+any deployed site. The anon key is built for that: it grants nothing on its own,
+and row-level security is what protects the data. Keeping it out of the repo would
+buy no security and would break deployment.
+
+To point at a different Supabase project, copy `config.example.js` over
+`config.js` and fill in your own values.
+
+## Deploying to Vercel
+
+The site is static, so no build step is involved.
+
+1. Sign in to <https://vercel.com> with GitHub
+2. **Add New → Project**, import `My-finance`
+3. Framework preset: **Other**. Leave build command and output directory empty
+4. **Deploy**
+
+`vercel.json` maps two tidy paths: `/tracker` and `/budget`. The root URL redirects
+to the tracker via `index.html`.
+
+A deployed URL is reachable by anyone who has it. If that matters, turn off public
+sign-ups in Supabase → Authentication → Providers → Email, and create accounts
+yourself. Existing users keep working; new strangers cannot register.
 
 ## Database
 
