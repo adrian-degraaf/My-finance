@@ -54,7 +54,7 @@
     <div style="display: grid; place-items: center; min-height: 100vh; padding: 24px;">
       <div class="card elev-md" style="width: min(400px, 100%); padding: 28px; gap: 14px;">
         <div class="card-kicker">Personal finance</div>
-        <h2 style="font-size: 26px; margin: 0;">Financial Tracker</h2>
+        <h2 style="font-size: 26px; margin: 0;">Sift</h2>
         <p style="font-size: 13px; opacity: 0.6; margin: 0 0 6px;">Budget analysis, savings goals and spending insights.</p>
         <div class="field">
           <label for="email">Email</label>
@@ -78,7 +78,7 @@
 
       <nav data-rail style="flex: 0 0 224px; align-self: stretch; position: sticky; top: 0; height: 100vh; overflow-y: auto; display: flex; flex-direction: column; gap: 4px; padding: 22px 16px; border-right: 1px solid var(--color-divider); background: var(--color-neutral-900);">
         <div data-railhead style="display: flex; align-items: baseline; gap: 8px; margin: 0 0 18px 2px;">
-          <div class="nav-brand">Financial Tracker</div>
+          <div class="nav-brand">Sift</div>
           <span style="font-size: 10px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--color-accent);">{{ liveLabel }}</span>
         </div>
       <a href="Budget Setup.dc.html" class="btn btn-secondary" style="width: 100%; justify-content: flex-start; text-align: left; text-decoration: none;">Budget setup</a>
@@ -134,16 +134,19 @@
 
           <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 12px;">
             <div class="card" style="padding: 16px 18px; gap: 6px;">
-              <div class="card-kicker">Total</div>
-              <div style="font-family: var(--font-heading); font-size: clamp(20px, 2.1vw, 28px); line-height: 1; white-space: nowrap;">{{ drillTotal }}</div>
+              <div class="card-kicker">Target</div>
+              <div style="font-family: var(--font-heading); font-size: clamp(20px, 2.1vw, 28px); line-height: 1; white-space: nowrap;">{{ drillTarget }}</div>
+              <div style="font-size: 11px; opacity: 0.5;">{{ drillTargetNote }}</div>
             </div>
             <div class="card" style="padding: 16px 18px; gap: 6px;">
-              <div class="card-kicker">Monthly average</div>
-              <div style="font-family: var(--font-heading); font-size: clamp(20px, 2.1vw, 28px); line-height: 1; white-space: nowrap;">{{ drillMonthly }}</div>
+              <div class="card-kicker">Actual</div>
+              <div style="font-family: var(--font-heading); font-size: clamp(20px, 2.1vw, 28px); line-height: 1; white-space: nowrap;">{{ drillActual }}</div>
+              <div style="font-size: 11px; opacity: 0.5;">{{ drillActualNote }}</div>
             </div>
             <div class="card" style="padding: 16px 18px; gap: 6px;">
-              <div class="card-kicker">Transactions</div>
-              <div style="font-family: var(--font-heading); font-size: clamp(20px, 2.1vw, 28px); line-height: 1; white-space: nowrap;">{{ drillCount }}</div>
+              <div class="card-kicker">Over / under</div>
+              <div style="{{ drillDiffStyle }}">{{ drillDiff }}</div>
+              <div style="font-size: 11px; opacity: 0.5;">{{ drillDiffNote }}</div>
             </div>
             <div class="card" style="padding: 16px 18px; gap: 6px;">
               <div class="card-kicker">Largest single</div>
@@ -195,14 +198,25 @@
         </div>
       </sc-if>
 
+      <sc-if value="{{ tipShown }}" hint-placeholder-val="{{ false }}">
+        <div style="{{ tipStyle }}">{{ tipText }}</div>
+      </sc-if>
+
       <sc-if value="{{ isBudget }}" hint-placeholder-val="{{ true }}">
         <div style="display: flex; flex-direction: column; gap: 24px;">
+          <div style="display: flex; align-items: flex-end; gap: 20px; flex-wrap: wrap; padding-bottom: 18px; border-bottom: 1px solid var(--color-divider);">
+            <div style="max-width: 640px;">
+              <div class="card-kicker">Budget tracking</div>
+              <h1 style="font-size: clamp(26px, 3vw, 34px); line-height: 1.15; margin: 4px 0 8px; font-weight: 500;">Where the money actually went.</h1>
+              <p style="font-size: 14px; opacity: 0.6; margin: 0; text-wrap: pretty;">Spend by category from your imported statements, measured against the budget you set. Click any figure to see the transactions behind it.</p>
+            </div>
+          </div>
 
-          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 12px;">
+          <div onMouseMove="{{ onTipMove }}" onMouseLeave="{{ onTipOut }}" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 12px;">
             <div class="card" style="padding: 16px 18px; gap: 6px; text-align: left; cursor: pointer; border: 1px solid transparent;" style-hover="{ borderColor: 'var(--color-accent)' }" role="button" onClick="{{ openAllSpend }}">
               <div style="display: flex; align-items: center; gap: 6px;">
                 <div class="card-kicker">Total spend</div>
-                <span title="{{ spendTip }}" style="font-size: 11px; opacity: 0.45; cursor: help;">ⓘ</span>
+                <span data-tip="{{ spendTip }}" style="font-size: 11px; opacity: 0.45; cursor: help;">ⓘ</span>
               </div>
               <div style="font-family: var(--font-heading); font-size: clamp(20px, 2.2vw, 30px); line-height: 1; white-space: nowrap;">{{ totalSpend }}</div>
               <div style="font-size: 11px; opacity: 0.5;">{{ monthCountLabel }}</div>
@@ -210,21 +224,21 @@
             <div class="card" style="padding: 16px 18px; gap: 6px;">
               <div style="display: flex; align-items: center; gap: 6px;">
                 <div class="card-kicker">Monthly average</div>
-                <span title="{{ targetLabel }}" style="font-size: 11px; opacity: 0.45; cursor: help;">ⓘ</span>
+                <span data-tip="{{ targetLabel }}" style="font-size: 11px; opacity: 0.45; cursor: help;">ⓘ</span>
               </div>
               <div style="font-family: var(--font-heading); font-size: clamp(20px, 2.2vw, 30px); line-height: 1; white-space: nowrap;">{{ monthlyAvg }}</div>
             </div>
             <div class="card" style="padding: 16px 18px; gap: 6px;">
               <div style="display: flex; align-items: center; gap: 6px;">
                 <div class="card-kicker">{{ varianceKicker }}</div>
-                <span title="{{ variancePct }}" style="font-size: 11px; opacity: 0.45; cursor: help;">ⓘ</span>
+                <span data-tip="{{ variancePct }}" style="font-size: 11px; opacity: 0.45; cursor: help;">ⓘ</span>
               </div>
               <div style="{{ varianceStyle }}">{{ variance }}</div>
             </div>
             <div class="card" style="padding: 16px 18px; gap: 6px; text-align: left; cursor: pointer; border: 1px solid transparent;" style-hover="{ borderColor: 'var(--color-accent)' }" role="button" tabindex="0" onClick="{{ openSalary }}">
               <div style="display: flex; align-items: center; gap: 6px;">
                 <div class="card-kicker">{{ salaryLabel }}</div>
-                <span title="{{ salaryTip }}" style="font-size: 11px; opacity: 0.45; cursor: help;">ⓘ</span>
+                <span data-tip="{{ salaryTip }}" style="font-size: 11px; opacity: 0.45; cursor: help;">ⓘ</span>
               </div>
               <div style="font-family: var(--font-heading); font-size: clamp(20px, 2.2vw, 30px); line-height: 1; white-space: nowrap;">{{ monthlySalary }}</div>
               <div data-nodrill onClick="{{ stopClick }}" class="field" style="gap: 5px; margin-top: 4px;">
@@ -236,7 +250,7 @@
             <div class="card" style="padding: 16px 18px; gap: 6px; text-align: left; cursor: pointer; border: 1px solid transparent;" style-hover="{ borderColor: 'var(--color-accent)' }" role="button" tabindex="0" onClick="{{ openOther }}">
               <div style="display: flex; align-items: center; gap: 6px;">
                 <div class="card-kicker">Other income</div>
-                <span title="{{ otherTip }}" style="display: inline-grid; place-items: center; width: 14px; height: 14px; border-radius: 50%; border: 1px solid var(--color-accent); color: var(--color-accent); font-size: 9px; line-height: 1; cursor: help;">?</span>
+                <span data-tip="{{ otherTip }}" style="display: inline-grid; place-items: center; width: 14px; height: 14px; border-radius: 50%; border: 1px solid var(--color-accent); color: var(--color-accent); font-size: 9px; line-height: 1; cursor: help;">?</span>
               </div>
               <div style="font-family: var(--font-heading); font-size: clamp(20px, 2.2vw, 30px); line-height: 1; white-space: nowrap;">{{ monthlyOther }}</div>
               <div data-nodrill onClick="{{ stopClick }}" class="field" style="gap: 5px; margin-top: 4px;">
@@ -287,7 +301,7 @@
             <div style="overflow-x: auto;"><table class="table" style="min-width: 620px;">
               <thead>
                 <tr>
-                  <th style="width: 28px;"></th>
+                  <th style="width: 44px;">Group</th>
                   <th>Category</th>
                   <th style="text-align: right;">{{ catAllTimeHeader }}</th>
                   <th style="text-align: right;">{{ catMonthlyHeader }}</th>
@@ -378,6 +392,13 @@
 
       <sc-if value="{{ isGoals }}" hint-placeholder-val="{{ false }}">
         <div style="display: flex; flex-direction: column; gap: 24px;">
+          <div style="display: flex; align-items: flex-end; gap: 20px; flex-wrap: wrap; padding-bottom: 18px; border-bottom: 1px solid var(--color-divider);">
+            <div style="max-width: 640px;">
+              <div class="card-kicker">Financial goals</div>
+              <h1 style="font-size: clamp(26px, 3vw, 34px); line-height: 1.15; margin: 4px 0 8px; font-weight: 500;">Set a target and see when you reach it.</h1>
+              <p style="font-size: 14px; opacity: 0.6; margin: 0; text-wrap: pretty;">Contributions and growth projected forward, with the date the pot lands and what it would take to get there sooner.</p>
+            </div>
+          </div>
           <div class="card" style="padding: 18px; gap: 16px;">
             <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
               <div class="card-title" style="margin-right: auto;">Your goals</div>
@@ -573,6 +594,13 @@
 
       <sc-if value="{{ isInsights }}" hint-placeholder-val="{{ false }}">
         <div style="display: flex; flex-direction: column; gap: 24px;">
+          <div style="display: flex; align-items: flex-end; gap: 20px; flex-wrap: wrap; padding-bottom: 18px; border-bottom: 1px solid var(--color-divider);">
+            <div style="max-width: 640px;">
+              <div class="card-kicker">AI review</div>
+              <h1 style="font-size: clamp(26px, 3vw, 34px); line-height: 1.15; margin: 4px 0 8px; font-weight: 500;">A second opinion on your spending.</h1>
+              <p style="font-size: 14px; opacity: 0.6; margin: 0; text-wrap: pretty;">Your categories read against the 50/30/20 rule, with expenditure leaks and savings ranked by what they are worth a year.</p>
+            </div>
+          </div>
           <div class="card" style="padding: 18px; gap: 10px;">
             <div class="card-title">What the numbers say</div>
             <sc-for list="{{ insightLines }}" as="line" hint-placeholder-count="4">
@@ -608,7 +636,7 @@ class Component extends DCLogic {
     dId: null, dName: '', dTarget: '', dCurrent: '', dMonthly: '', dType: '', dRate: '', dDate: '',
     aiText: '', aiLoading: false, live: false,
     selected: [], groups: [], groupName: '',
-    drill: null, drillMonth: 'all'
+    drill: null, drillMonth: 'all', tip: null
   };
 
   // Money moving between my own accounts is not spend and not income, in either
@@ -1133,9 +1161,16 @@ class Component extends DCLogic {
     const a = this.analyze();
     const cov = this.coverage(a);
     const onBudget = this.targetFromBudget();
+    // Several budget lines can share a category (three subscriptions, say). Summing them
+    // is the whole point — .find() reported one line and made the target look tiny.
     const budgetFor = c => {
-      const line = (this.state.budget || []).find(b => String(b.category || '').trim().toLowerCase() === String(c).trim().toLowerCase() && Number(b.target) > 0);
-      return line ? ', budget ' + this.money(Number(line.target)) + '/mo' : ', no budget set';
+      const lines = (this.state.budget || []).filter(b =>
+        String(b.category || '').trim().toLowerCase() === String(c).trim().toLowerCase() && Number(b.target) > 0);
+      if (!lines.length) return ', no budget set';
+      const sum = lines.reduce((t, b) => t + Number(b.target), 0);
+      const named = lines.map(b => (b.name || b.bill_name || 'line') + ' ' + this.money(Number(b.target))).join(', ');
+      return ', budget ' + this.money(sum) + '/mo across ' + lines.length
+        + (lines.length === 1 ? ' line (' : ' lines (') + named + ')';
     };
     const cats = Object.entries(a.byCategory)
       .sort((x, y) => y[1] - x[1])
@@ -1219,7 +1254,10 @@ class Component extends DCLogic {
       if (grouped.has(name)) return;
       units.push({ key: name, name, members: [name], isGroup: false, total, range: targetFor([name]) });
     });
-    const categoryRows = units.sort((x, y) => y.total - x.total).map(u => {
+    const biggestUnit = [...units].sort((x, y) => y.total - x.total)[0];
+    const categoryRows = units
+      .sort((x, y) => String(x.name).localeCompare(String(y.name), 'en-GB', { sensitivity: 'base' }))
+      .map(u => {
       const monthly = u.total / catDivisor;
       const hasTarget = u.range > 0;
       const over = hasTarget && monthly > u.range;
@@ -1242,7 +1280,7 @@ class Component extends DCLogic {
           groups: st.groups.filter(g => g.name !== u.name),
           selected: st.selected.filter(k => k !== u.key)
         })),
-        open: () => this.setState({ drill: { name: u.name, members: u.members }, drillMonth: 'all' })
+        open: () => this.setState(st0 => ({ drill: { name: u.name, members: u.members }, drillMonth: st0.catMonth || 'all' }))
       };
     });
     const selectedUnits = units.filter(u => s.selected.includes(u.key));
@@ -1268,6 +1306,26 @@ class Component extends DCLogic {
       const total = shown.reduce((t, r) => t + (parseFloat(r.amount) || 0), 0);
       const spanMonths = s.drillMonth === 'all' ? a.months : 1;
       const biggest = shown.reduce((m, r) => (Math.abs(r.amount) > Math.abs(m.amount || 0) ? r : m), {});
+      // Target and actual on the same period basis, so Over/Under reconciles by hand:
+      // one month of budget when a month is picked, all months when it is not.
+      const monthlyTarget = drill.kind === 'income' ? null
+        : drill.kind === 'allSpend' ? this.target() : targetFor(drill.members);
+      const hasDrillTarget = monthlyTarget !== null && monthlyTarget > 0;
+      const periodTarget = hasDrillTarget ? monthlyTarget * spanMonths : 0;
+      const actualAbs = Math.abs(total);
+      // On the All spend drill the target only covers budgeted categories, so the
+      // comparison is made against budgeted spend alone; the rest is unbudgeted, not over.
+      const dCov = drill.kind === 'allSpend' ? this.coverage(a) : null;
+      // coverage().spend is a monthly average, so it only scales when the drill is on all
+      // months; a picked month is summed from that month's own budgeted categories.
+      const comparedAbs = !dCov ? actualAbs
+        : s.drillMonth === 'all'
+          ? dCov.spend * a.months
+          : Object.entries(a.byCatMonth[s.drillMonth] || {})
+              .filter(([c]) => dCov.budgeted.has(String(c).trim().toLowerCase()))
+              .reduce((t, [, v]) => t + v, 0);
+      const unbudgetedAbs = dCov ? Math.max(0, actualAbs - comparedAbs) : 0;
+      const diff = periodTarget - comparedAbs;
       drillVals = {
         isDrill: true,
         drillName: drill.name,
@@ -1282,6 +1340,22 @@ class Component extends DCLogic {
           : (drill.members.length > 1 ? drill.members.join(' · ') : ''),
         drillTotal: this.signed(total),
         drillMonthly: this.signed(total / spanMonths),
+        drillTarget: hasDrillTarget ? this.money(periodTarget) : '—',
+        drillTargetNote: hasDrillTarget
+          ? (spanMonths > 1 ? this.money(monthlyTarget) + '/mo × ' + spanMonths + ' months' : 'Budget for this month')
+          : (drill.kind === 'income' ? 'Income is not budgeted' : 'No budget line set'),
+        drillActual: this.money(actualAbs),
+        drillActualNote: (spanMonths > 1 ? this.money(actualAbs / spanMonths) + '/mo average · ' : '')
+          + shown.length + (shown.length === 1 ? ' transaction' : ' transactions')
+          + (unbudgetedAbs > 0 ? ' · ' + this.money(unbudgetedAbs) + ' of this is unbudgeted' : ''),
+        drillDiff: hasDrillTarget ? (diff >= 0 ? this.money(diff) + ' under' : this.money(-diff) + ' over') : '—',
+        drillDiffNote: hasDrillTarget
+          ? Math.round((comparedAbs / periodTarget) * 100) + '% of target spent'
+            + (dCov ? ' · budgeted categories only' : '')
+          : 'Set a budget line to compare',
+        drillDiffStyle: { fontFamily: 'var(--font-heading)', fontSize: 'clamp(20px, 2.1vw, 28px)',
+          lineHeight: 1, whiteSpace: 'nowrap',
+          color: !hasDrillTarget ? 'inherit' : diff >= 0 ? 'var(--color-under)' : 'var(--color-over)' },
         drillCount: String(shown.length),
         drillMax: biggest.amount ? this.signed(biggest.amount) : '—',
         drillMaxWhat: biggest.description || biggest.date || '',
@@ -1371,7 +1445,7 @@ class Component extends DCLogic {
     } else if (!s.dDate) {
       neededMonthlyNote = 'No target date set';
     }
-    const topCat = categoryRows[0];
+    const topCat = biggestUnit ? categoryRows.find(r => r.name === biggestUnit.name) : undefined;
     const cvg = this.coverage(a);
     const onBudget = this.targetFromBudget();
     const insVariance = onBudget ? cvg.spend - this.target() : a.variance;
@@ -1422,6 +1496,26 @@ class Component extends DCLogic {
       userEmail: s.user ? s.user.email : '',
       liveLabel: s.live ? 'Live' : '',
       signOut: () => this.sb.auth.signOut(),
+      // Native title tooltips never appear on these cards (the card is a click target and
+      // the pointer keeps moving), so the hint is drawn as a positioned bubble instead.
+      tipShown: !!s.tip,
+      tipText: s.tip ? s.tip.text : '',
+      tipStyle: s.tip ? { position: 'fixed', left: s.tip.x + 'px', top: s.tip.y + 'px',
+        transform: 'translate(-50%, -100%)', zIndex: 60, pointerEvents: 'none',
+        maxWidth: '280px', padding: '8px 10px', borderRadius: 'var(--radius-sm)',
+        background: 'var(--color-neutral-900)', border: '1px solid var(--color-divider)',
+        boxShadow: 'var(--shadow-md)', color: 'var(--color-text)', fontSize: '12px',
+        lineHeight: 1.45, textWrap: 'pretty' } : {},
+      onTipMove: e => {
+        const el = e.target.closest('[data-tip]');
+        const text = el && el.getAttribute('data-tip');
+        if (!text) { if (this.state.tip) this.setState({ tip: null }); return; }
+        const r = el.getBoundingClientRect();
+        const next = { text, x: Math.round(r.left + r.width / 2), y: Math.round(r.top - 8) };
+        const cur = this.state.tip;
+        if (!cur || cur.text !== next.text || cur.x !== next.x || cur.y !== next.y) this.setState({ tip: next });
+      },
+      onTipOut: () => { if (this.state.tip) this.setState({ tip: null }); },
       ...drillVals,
       isBudget: s.tab === 'budget' && !s.drill,
       isGoals: s.tab === 'goals' && !s.drill,

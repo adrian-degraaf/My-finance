@@ -1,4 +1,4 @@
-# Finance Tracker
+# Sift
 
 Two static pages over a Supabase backend. Import Monzo CSV exports, set a monthly
 budget, and see spend by category against it.

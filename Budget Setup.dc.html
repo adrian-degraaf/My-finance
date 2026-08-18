@@ -77,7 +77,7 @@
 
       <nav data-rail style="flex: 0 0 224px; align-self: stretch; position: sticky; top: 0; height: 100vh; overflow-y: auto; display: flex; flex-direction: column; gap: 4px; padding: 22px 16px; border-right: 1px solid var(--color-divider); background: var(--color-neutral-900);">
         <div data-railhead style="display: flex; align-items: baseline; gap: 8px; margin: 0 0 18px 2px;">
-          <div class="nav-brand">Financial Tracker</div>
+          <div class="nav-brand">Sift</div>
           <span style="font-size: 10px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--color-accent);">{{ liveLabel }}</span>
         </div>
       <button class="btn {{ setupTabClass }}" style="width: 100%; justify-content: flex-start; text-align: left;" onClick="{{ goSetup }}">Budget setup</button>
@@ -125,9 +125,12 @@
       <sc-if value="{{ isSetup }}" hint-placeholder-val="{{ true }}">
         <div style="display: flex; flex-direction: column; gap: 28px;">
 
+          <div style="display: flex; align-items: flex-end; gap: 20px; flex-wrap: wrap; padding-bottom: 18px; border-bottom: 1px solid var(--color-divider);">
           <div style="max-width: 640px;">
-            <h1 style="font-size: 34px; line-height: 1.15; margin: 0 0 10px; font-weight: 500;">Name your bills, set a monthly target, tag a category.</h1>
+            <div class="card-kicker">Budget setup</div>
+            <h1 style="font-size: clamp(26px, 3vw, 34px); line-height: 1.15; margin: 4px 0 8px; font-weight: 500;">Name your bills, set a monthly target, tag a category.</h1>
             <p style="font-size: 14px; opacity: 0.6; margin: 0; text-wrap: pretty;">Bill names are yours alone — call a line whatever you call it. The category is the tie back to your bank statements, so pick one that matches how the transactions are labelled.</p>
+          </div>
           </div>
 
           <div class="card elev-md" style="padding: 20px 22px; gap: 18px;">
@@ -169,20 +172,25 @@
           </div>
 
           <div class="card" style="padding: 18px; gap: 14px;">
-            <div class="card-title">Drop a spreadsheet</div>
-            <p style="font-size: 13px; opacity: 0.55; margin: 0; text-wrap: pretty;">A CSV with three columns — bill name, monthly target, category. Header names are matched loosely, so “Bill”, “Name”, “Item” and “Description” all work, as do “Target”, “Amount” and “Budget”. Rows land in the table below for editing before you save.</p>
-            <div style="display: flex; align-items: center; gap: 14px; flex-wrap: wrap;">
+            <div class="card-title">Import a CSV</div>
+            <p style="font-size: 13px; opacity: 0.55; margin: 0;">Bill name, monthly target, category. Rows land in the table below to edit before saving.</p>
+            <div style="display: grid; grid-template-columns: minmax(220px, 1fr) auto; gap: 10px 14px; align-items: center;">
               <input type="file" accept=".csv" onChange="{{ onFile }}" style="font-size: 13px;">
               <select class="input" style="width: auto;" value="{{ importMode }}" onChange="{{ onImportMode }}">
                 <option value="append">Add to my lines</option>
                 <option value="replace">Replace all my lines</option>
               </select>
-              <label style="display: flex; align-items: center; gap: 7px; font-size: 13px; opacity: 0.7; cursor: pointer;">
-                <input type="checkbox" checked="{{ autoSuggest }}" onChange="{{ onAutoSuggest }}" style="accent-color: var(--color-accent); cursor: pointer;">
-                Suggest a category for each bill
-              </label>
             </div>
-            <p style="font-size: 12px; opacity: 0.45; margin: 0; text-wrap: pretty;">Leave the category column out of your spreadsheet and each bill name is matched to a category already present in your statements. Suggestions are outlined and labelled, so you only have to correct the ones that are wrong.</p>
+            <label style="display: flex; align-items: flex-start; gap: 8px; font-size: 13px; cursor: pointer;">
+              <input type="checkbox" checked="{{ autoSuggest }}" onChange="{{ onAutoSuggest }}" style="accent-color: var(--color-accent); cursor: pointer; margin-top: 2px;">
+              <span>Suggest a category for each bill
+                <span style="display: block; font-size: 12px; opacity: 0.45;">For rows with no category. Suggestions are outlined so you can correct them.</span>
+              </span>
+            </label>
+            <details style="font-size: 12px; opacity: 0.5;">
+              <summary style="cursor: pointer;">Column names</summary>
+              <p style="margin: 6px 0 0;">Matched loosely: Bill, Name, Item or Description; Target, Amount or Budget; Category.</p>
+            </details>
             <sc-if value="{{ uploadMsg }}" hint-placeholder-val="{{ false }}">
               <div style="font-size: 12px; color: var(--color-accent-300);">{{ uploadMsg }}</div>
             </sc-if>
@@ -273,9 +281,12 @@
       <sc-if value="{{ isCompare }}" hint-placeholder-val="{{ false }}">
         <div style="display: flex; flex-direction: column; gap: 28px;">
 
-          <div style="max-width: 640px;">
-            <h1 style="font-size: 34px; line-height: 1.15; margin: 0 0 10px; font-weight: 500;">Budget against what you actually spent.</h1>
-            <p style="font-size: 14px; opacity: 0.6; margin: 0; text-wrap: pretty;">{{ actualBasisLabel }}</p>
+          <div style="display: flex; align-items: flex-end; gap: 20px; flex-wrap: wrap; padding-bottom: 18px; border-bottom: 1px solid var(--color-divider);">
+            <div style="max-width: 640px;">
+              <div class="card-kicker">Budget vs actual</div>
+              <h1 style="font-size: clamp(26px, 3vw, 34px); line-height: 1.15; margin: 4px 0 8px; font-weight: 500;">Budget against what you actually spent.</h1>
+              <p style="font-size: 14px; opacity: 0.6; margin: 0; text-wrap: pretty;">{{ actualBasisLabel }}</p>
+            </div>
           </div>
 
           <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px;">
